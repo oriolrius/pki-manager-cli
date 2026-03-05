@@ -134,3 +134,11 @@ done
 - The `.gitignore` is configured to exclude `.env` files
 - Use `~/.config/pki-cli/.env` for personal credentials
 - Token cache is stored in `~/.cache/pki-cli/token` with restricted permissions
+
+## Related Projects
+
+| Project | Description |
+|---------|-------------|
+| [PKI Manager](https://github.com/oriolrius/pki-manager-web) | Main PKI Manager web application |
+| [PKI Manager Ansible](https://github.com/oriolrius/pki-manager-ansible) | Ansible Collection for certificate management ([Galaxy](https://galaxy.ansible.com/ui/repo/published/oriolrius/pki_manager/)) |
+| [PKI Manager Skill](https://github.com/oriolrius/pki-manager-skill) | Claude Code skill for AI-assisted certificate management |
