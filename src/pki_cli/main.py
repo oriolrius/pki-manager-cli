@@ -25,6 +25,9 @@ from pki_api.pki_manager_rest_api_client.api.certificates import (
     post_certificates_id_renew,
     post_certificates_id_revoke,
 )
+from pki_api.pki_manager_rest_api_client.models.get_certificates_id_download_format import (
+    GetCertificatesIdDownloadFormat,
+)
 from pki_api.pki_manager_rest_api_client.api.dashboard import (
     get_dashboard_expiring,
     get_dashboard_stats,
@@ -486,17 +489,30 @@ def cert_download(
     password: Annotated[Optional[str], typer.Option("--password", "-p", help="Password for PKCS12/JKS")] = None,
 ) -> None:
     """Download certificate."""
+    import base64
+
     try:
         # Validate password requirement
         if format in ("pkcs12", "jks") and not password:
             print_error(f"Password required for {format} format")
             raise typer.Exit(1)
 
+        # Map CLI format names to API enum values
+        format_mapping = {
+            "pem": "pem",
+            "der": "der",
+            "pkcs12": "p12",
+            "p12": "p12",
+            "jks": "jks-keystore",
+        }
+        api_format = format_mapping.get(format.lower(), format)
+        format_enum = GetCertificatesIdDownloadFormat(api_format)
+
         client = get_client()
         result = get_certificates_id_download.sync_detailed(
             client=client,
             id=cert_id,
-            format_=format,
+            format_=format_enum,
             password=password if password else UNSET,
         )
 
@@ -504,12 +520,23 @@ def cert_download(
             print_error(f"Failed to download certificate: {result.status_code}")
             raise typer.Exit(1)
 
-        # Adjust filename extension
-        if output_file == Path("cert.pem"):
-            ext = format if format != "pkcs12" else "p12"
-            output_file = Path(f"cert.{ext}")
+        # Parse response and decode base64 data
+        parsed = result.parsed
+        if parsed is None or parsed.data is UNSET:
+            print_error("No certificate data in response")
+            raise typer.Exit(1)
 
-        output_file.write_bytes(result.content)
+        cert_data = base64.b64decode(parsed.data)
+
+        # Adjust filename extension or use suggested filename
+        if output_file == Path("cert.pem"):
+            if parsed.filename and parsed.filename is not UNSET:
+                output_file = Path(parsed.filename)
+            else:
+                ext = format if format != "pkcs12" else "p12"
+                output_file = Path(f"cert.{ext}")
+
+        output_file.write_bytes(cert_data)
         print_success(f"Certificate saved to {output_file}")
     except Exception as e:
         print_error(str(e))
