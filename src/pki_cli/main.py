@@ -358,7 +358,7 @@ def cert_get(
 def cert_issue(
     ca_id: Annotated[str, typer.Option("--ca", help="CA ID to issue from")],
     common_name: Annotated[str, typer.Option("--cn", help="Common Name")],
-    cert_type: Annotated[str, typer.Option("--type", "-t", help="Certificate type: server, client, email, code_signing")] = "server",
+    cert_type: Annotated[str, typer.Option("--type", "-t", help="Certificate type: server, client, dual, email, code_signing")] = "server",
     organization: Annotated[str, typer.Option("--org", "-O", help="Organization")] = "YMBIHQ",
     country: Annotated[str, typer.Option("--country", "-c", help="Country")] = "ES",
     algorithm: Annotated[str, typer.Option("--algorithm", "-a", help="Key algorithm")] = "RSA-2048",
