@@ -11,6 +11,7 @@ from ..models.list_certificates_request_type_1_certificate_type import ListCerti
 from ..models.list_certificates_request_type_1_expiry_status import ListCertificatesRequestType1ExpiryStatus
 from ..models.list_certificates_request_type_1_sort_by import ListCertificatesRequestType1SortBy
 from ..models.list_certificates_request_type_1_sort_order import ListCertificatesRequestType1SortOrder
+from ..models.list_certificates_request_type_1_source_type import ListCertificatesRequestType1SourceType
 from ..models.list_certificates_request_type_1_status import ListCertificatesRequestType1Status
 from ..types import UNSET, Unset
 
@@ -26,6 +27,7 @@ class ListCertificatesRequestType1:
         certificate_type (ListCertificatesRequestType1CertificateType | Unset):
         domain (str | Unset):
         expiry_status (ListCertificatesRequestType1ExpiryStatus | Unset):
+        source_type (ListCertificatesRequestType1SourceType | Unset):
         issued_after (datetime.datetime | Unset):
         issued_before (datetime.datetime | Unset):
         expires_after (datetime.datetime | Unset):
@@ -43,6 +45,7 @@ class ListCertificatesRequestType1:
     certificate_type: ListCertificatesRequestType1CertificateType | Unset = UNSET
     domain: str | Unset = UNSET
     expiry_status: ListCertificatesRequestType1ExpiryStatus | Unset = UNSET
+    source_type: ListCertificatesRequestType1SourceType | Unset = UNSET
     issued_after: datetime.datetime | Unset = UNSET
     issued_before: datetime.datetime | Unset = UNSET
     expires_after: datetime.datetime | Unset = UNSET
@@ -69,6 +72,10 @@ class ListCertificatesRequestType1:
         expiry_status: str | Unset = UNSET
         if not isinstance(self.expiry_status, Unset):
             expiry_status = self.expiry_status.value
+
+        source_type: str | Unset = UNSET
+        if not isinstance(self.source_type, Unset):
+            source_type = self.source_type.value
 
         issued_after: str | Unset = UNSET
         if not isinstance(self.issued_after, Unset):
@@ -113,6 +120,8 @@ class ListCertificatesRequestType1:
             field_dict["domain"] = domain
         if expiry_status is not UNSET:
             field_dict["expiryStatus"] = expiry_status
+        if source_type is not UNSET:
+            field_dict["sourceType"] = source_type
         if issued_after is not UNSET:
             field_dict["issuedAfter"] = issued_after
         if issued_before is not UNSET:
@@ -161,6 +170,13 @@ class ListCertificatesRequestType1:
             expiry_status = UNSET
         else:
             expiry_status = ListCertificatesRequestType1ExpiryStatus(_expiry_status)
+
+        _source_type = d.pop("sourceType", UNSET)
+        source_type: ListCertificatesRequestType1SourceType | Unset
+        if isinstance(_source_type, Unset):
+            source_type = UNSET
+        else:
+            source_type = ListCertificatesRequestType1SourceType(_source_type)
 
         _issued_after = d.pop("issuedAfter", UNSET)
         issued_after: datetime.datetime | Unset
@@ -216,6 +232,7 @@ class ListCertificatesRequestType1:
             certificate_type=certificate_type,
             domain=domain,
             expiry_status=expiry_status,
+            source_type=source_type,
             issued_after=issued_after,
             issued_before=issued_before,
             expires_after=expires_after,
