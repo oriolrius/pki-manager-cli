@@ -6,7 +6,6 @@ Command-line interface for managing X.509 certificates via the PKI Manager API.
 
 ```bash
 # Using uv (recommended)
-cd cli
 uv sync
 uv run pki --help
 
@@ -90,6 +89,83 @@ pki cert download <CERT_ID>                    # Download as PEM
 pki cert download <CERT_ID> -f pkcs12 -p pass  # Download as PKCS12
 ```
 
+### SSH Certificate Manager
+
+Manage SSH CAs, host/user certificates, principals, fleet tokens and per-host
+access blocks. These use the same OIDC credentials as the X.509 commands.
+`--pubkey`/`--csr` flags accept an inline value or an `@path/to/file` reference.
+
+```bash
+# CAs
+pki ssh ca list                                     # List user + host CAs
+pki ssh ca create --type user --label "acme-users"  # Create a CA
+pki ssh ca pub <CA_ID>                              # Print the CA's OpenSSH public key
+pki ssh ca krl-generate <CA_ID>                     # Rebuild the CA's KRL
+pki ssh ca revocations <CA_ID>                      # List revocations
+
+# Hosts
+pki ssh host register --fqdn web1.acme.internal --pubkey @/etc/ssh/ssh_host_ecdsa_key.pub
+pki ssh host issue --host-id <HOST_ID> --ttl 2592000
+pki ssh host list --fqdn web1.acme.internal
+pki ssh host access <HOST_ID>                       # Who can reach this host
+pki ssh host cert <HOST_ID>                         # Print the host certificate
+pki ssh host sshd-config <HOST_ID>                  # Print the sshd_config drop-in
+
+# Identities & user certificates
+pki ssh identity create --subject alice
+pki ssh user issue --identity-id <ID> --pubkey @~/.ssh/id_ed25519.pub \
+    -p admins -p developers --ttl 3600 -e permit-pty
+
+# Principals (roles)
+pki ssh principal create --name admins
+pki ssh principal map --host-id <HOST_ID> --principal-id <PID> --local-account root
+pki ssh principal grant --identity-id <ID> --principal-id <PID>
+
+# Fleet tokens (automation credentials for the external SSH API)
+pki ssh token mint --name ci --op sign-host --op sign-user --host-ca-id <CA_ID>
+pki ssh token revoke <TOKEN_ID>
+
+# Per-host access blocks + revocation
+pki ssh block create --host-id <HOST_ID> --identity-id <ID> --reason "offboarded"
+pki ssh block unblock --host-id <HOST_ID> --identity-id <ID>
+pki ssh cert revoke <CERT_ID> --reason key_compromise
+
+# Trust material & health
+pki ssh trust-anchors                               # TrustedUserCAKeys / @cert-authority
+pki ssh host-ca-keys                                # Host CA public key(s)
+pki ssh cert-authority -p '*.acme.internal'         # known_hosts @cert-authority lines
+pki ssh metrics                                     # KRL / expiry health metrics
+pki ssh krl <CA_ID> -o revoked_keys                 # Download a CA's KRL bytes
+```
+
+> The public trust-material routes (`ca pub`, `host cert`, `sshd-config`,
+> `host-ca-keys`, `trusted-user-ca-keys`, `cert-authority`, `krl`) are served at
+> the server root, not under `/api/v1`. On deployments where a web frontend is
+> mounted at the root, these may be shadowed — the CLI reports this clearly
+> rather than printing the HTML page.
+
+### External / Automation API
+
+Machine-facing endpoints authenticated with their own bearer token (not OIDC):
+
+- **Cluster token** (`pkimg_...`, one per CA) for the X.509 issuer API —
+  `--token` or `PKI_CLUSTER_TOKEN`.
+- **Fleet token** (minted via `pki ssh token mint`) for the SSH automation API —
+  `--token` or `PKI_FLEET_TOKEN`.
+
+```bash
+# X.509 issuer API (cluster token)
+pki external health --token pkimg_xxx
+pki external ca-bundle --token pkimg_xxx --output-file ca-chain.pem
+pki external sign --token pkimg_xxx --csr @request.csr --request-uid $(uuidgen)
+pki external revoke --token pkimg_xxx --serial 0A1B2C
+
+# SSH automation API (fleet token)
+pki external ssh sign-host --fqdn web1.acme.internal --pubkey @/etc/ssh/ssh_host_ecdsa_key.pub
+pki external ssh sign-user --subject alice --pubkey @~/.ssh/id_ed25519.pub -p admins
+pki external ssh auth-principals web1.acme.internal
+```
+
 ### Dashboard
 
 ```bash
@@ -127,6 +203,8 @@ done
 | `PKI_OIDC_URL` | OIDC token endpoint | Yes |
 | `PKI_CLIENT_ID` | OIDC client ID | Yes |
 | `PKI_CLIENT_SECRET` | OIDC client secret | Yes |
+| `PKI_CLUSTER_TOKEN` | Cluster bearer token for `pki external` (X.509 issuer API) | For `external` |
+| `PKI_FLEET_TOKEN` | Fleet bearer token for `pki external ssh` (SSH automation API) | For `external ssh` |
 
 ## Security Notes
 

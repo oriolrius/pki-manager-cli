@@ -55,6 +55,8 @@ from pki_api.pki_manager_rest_api_client.types import UNSET
 from . import __version__
 from .client import get_client
 from .config import configure
+from .external import external_app
+from .ssh import ssh_app
 from .output import (
     print_ca_detail,
     print_ca_table,
@@ -83,6 +85,8 @@ cert_app = typer.Typer(help="Certificate management")
 
 app.add_typer(ca_app, name="ca")
 app.add_typer(cert_app, name="cert")
+app.add_typer(ssh_app, name="ssh")
+app.add_typer(external_app, name="external")
 
 
 # Common type aliases

@@ -228,6 +228,67 @@ def print_search_results(data: dict) -> None:
         console.print(table)
 
 
+def _scalar(value: Any) -> str:
+    """Render any value as a single table cell."""
+    if value is None:
+        return "-"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, default=str, ensure_ascii=False)
+    return str(value)
+
+
+def print_records(items: Any, columns: list[str] | None = None, title: str | None = None) -> None:
+    """Render a list of dicts as a table, inferring columns when not given.
+
+    Deliberately schema-agnostic: the SSH/external responses are not typed, so
+    this tolerates arbitrary shapes and never raises on a missing key.
+    """
+    items = list(items or [])
+    if not items:
+        console.print("[dim]No results[/dim]")
+        return
+
+    if columns is None:
+        columns = []
+        for item in items:
+            if isinstance(item, dict):
+                for key in item:
+                    if key not in columns:
+                        columns.append(key)
+    if not columns:  # list of scalars
+        table = Table(title=title)
+        table.add_column("Value")
+        for item in items:
+            table.add_row(_scalar(item))
+        console.print(table)
+        return
+
+    table = Table(title=title)
+    for col in columns:
+        table.add_column(col, overflow="ellipsis", max_width=44)
+    for item in items:
+        if isinstance(item, dict):
+            table.add_row(*[_scalar(item.get(col)) for col in columns])
+        else:
+            table.add_row(_scalar(item), *[""] * (len(columns) - 1))
+    console.print(table)
+
+
+def print_kv(obj: Any, title: str | None = None) -> None:
+    """Render a single object as a key/value panel (falls back to JSON)."""
+    if not isinstance(obj, dict):
+        print_json(obj)
+        return
+    table = Table(show_header=False, box=None)
+    table.add_column("Field", style="bold cyan")
+    table.add_column("Value", overflow="fold")
+    for key, value in obj.items():
+        table.add_row(key, _scalar(value))
+    console.print(Panel(table, title=title, border_style="blue") if title else table)
+
+
 def print_success(message: str) -> None:
     """Print a success message."""
     console.print(f"[green]✓[/green] {message}")
