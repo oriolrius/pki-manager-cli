@@ -5,12 +5,18 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 
-from ..models.create_certificate_request_certificate_type import CreateCertificateRequestCertificateType
-from ..models.create_certificate_request_key_algorithm import CreateCertificateRequestKeyAlgorithm
+from ..models.create_certificate_request_certificate_type import (
+    CreateCertificateRequestCertificateType,
+)
+from ..models.create_certificate_request_key_algorithm import (
+    CreateCertificateRequestKeyAlgorithm,
+)
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.create_certificate_request_subject import CreateCertificateRequestSubject
+    from ..models.create_certificate_request_subject import (
+        CreateCertificateRequestSubject,
+    )
 
 
 T = TypeVar("T", bound="CreateCertificateRequest")
@@ -36,7 +42,9 @@ class CreateCertificateRequest:
     subject: CreateCertificateRequestSubject
     certificate_type: CreateCertificateRequestCertificateType
     validity_days: int
-    key_algorithm: CreateCertificateRequestKeyAlgorithm | Unset = CreateCertificateRequestKeyAlgorithm.RSA_2048
+    key_algorithm: CreateCertificateRequestKeyAlgorithm | Unset = (
+        CreateCertificateRequestKeyAlgorithm.RSA_2048
+    )
     san_dns: list[str] | Unset = UNSET
     san_ip: list[str] | Unset = UNSET
     san_email: list[str] | Unset = UNSET
@@ -96,14 +104,18 @@ class CreateCertificateRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.create_certificate_request_subject import CreateCertificateRequestSubject
+        from ..models.create_certificate_request_subject import (
+            CreateCertificateRequestSubject,
+        )
 
         d = dict(src_dict)
         ca_id = d.pop("caId")
 
         subject = CreateCertificateRequestSubject.from_dict(d.pop("subject"))
 
-        certificate_type = CreateCertificateRequestCertificateType(d.pop("certificateType"))
+        certificate_type = CreateCertificateRequestCertificateType(
+            d.pop("certificateType")
+        )
 
         validity_days = d.pop("validityDays")
 

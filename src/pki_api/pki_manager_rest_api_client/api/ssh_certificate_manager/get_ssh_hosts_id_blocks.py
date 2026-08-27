@@ -6,6 +6,15 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.get_ssh_hosts_id_blocks_response_200_item import (
+    GetSshHostsIdBlocksResponse200Item,
+)
+from ...models.get_ssh_hosts_id_blocks_response_400 import (
+    GetSshHostsIdBlocksResponse400,
+)
+from ...models.get_ssh_hosts_id_blocks_response_500 import (
+    GetSshHostsIdBlocksResponse500,
+)
 from ...types import Response
 
 
@@ -23,9 +32,35 @@ def _get_kwargs(
     return _kwargs
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | None:
+def _parse_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> (
+    GetSshHostsIdBlocksResponse400
+    | GetSshHostsIdBlocksResponse500
+    | list[GetSshHostsIdBlocksResponse200Item]
+    | None
+):
     if response.status_code == 200:
-        return None
+        response_200 = []
+        _response_200 = response.json()
+        for response_200_item_data in _response_200:
+            response_200_item = GetSshHostsIdBlocksResponse200Item.from_dict(
+                response_200_item_data
+            )
+
+            response_200.append(response_200_item)
+
+        return response_200
+
+    if response.status_code == 400:
+        response_400 = GetSshHostsIdBlocksResponse400.from_dict(response.json())
+
+        return response_400
+
+    if response.status_code == 500:
+        response_500 = GetSshHostsIdBlocksResponse500.from_dict(response.json())
+
+        return response_500
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -33,7 +68,13 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any]:
+def _build_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Response[
+    GetSshHostsIdBlocksResponse400
+    | GetSshHostsIdBlocksResponse500
+    | list[GetSshHostsIdBlocksResponse200Item]
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -46,7 +87,11 @@ def sync_detailed(
     id: str,
     *,
     client: AuthenticatedClient | Client,
-) -> Response[Any]:
+) -> Response[
+    GetSshHostsIdBlocksResponse400
+    | GetSshHostsIdBlocksResponse500
+    | list[GetSshHostsIdBlocksResponse200Item]
+]:
     """Block history for a host (active + lifted, audit-retained)
 
     Args:
@@ -57,7 +102,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        Response[GetSshHostsIdBlocksResponse400 | GetSshHostsIdBlocksResponse500 | list[GetSshHostsIdBlocksResponse200Item]]
     """
 
     kwargs = _get_kwargs(
@@ -71,11 +116,16 @@ def sync_detailed(
     return _build_response(client=client, response=response)
 
 
-async def asyncio_detailed(
+def sync(
     id: str,
     *,
     client: AuthenticatedClient | Client,
-) -> Response[Any]:
+) -> (
+    GetSshHostsIdBlocksResponse400
+    | GetSshHostsIdBlocksResponse500
+    | list[GetSshHostsIdBlocksResponse200Item]
+    | None
+):
     """Block history for a host (active + lifted, audit-retained)
 
     Args:
@@ -86,7 +136,35 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        GetSshHostsIdBlocksResponse400 | GetSshHostsIdBlocksResponse500 | list[GetSshHostsIdBlocksResponse200Item]
+    """
+
+    return sync_detailed(
+        id=id,
+        client=client,
+    ).parsed
+
+
+async def asyncio_detailed(
+    id: str,
+    *,
+    client: AuthenticatedClient | Client,
+) -> Response[
+    GetSshHostsIdBlocksResponse400
+    | GetSshHostsIdBlocksResponse500
+    | list[GetSshHostsIdBlocksResponse200Item]
+]:
+    """Block history for a host (active + lifted, audit-retained)
+
+    Args:
+        id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Response[GetSshHostsIdBlocksResponse400 | GetSshHostsIdBlocksResponse500 | list[GetSshHostsIdBlocksResponse200Item]]
     """
 
     kwargs = _get_kwargs(
@@ -96,3 +174,34 @@ async def asyncio_detailed(
     response = await client.get_async_httpx_client().request(**kwargs)
 
     return _build_response(client=client, response=response)
+
+
+async def asyncio(
+    id: str,
+    *,
+    client: AuthenticatedClient | Client,
+) -> (
+    GetSshHostsIdBlocksResponse400
+    | GetSshHostsIdBlocksResponse500
+    | list[GetSshHostsIdBlocksResponse200Item]
+    | None
+):
+    """Block history for a host (active + lifted, audit-retained)
+
+    Args:
+        id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        GetSshHostsIdBlocksResponse400 | GetSshHostsIdBlocksResponse500 | list[GetSshHostsIdBlocksResponse200Item]
+    """
+
+    return (
+        await asyncio_detailed(
+            id=id,
+            client=client,
+        )
+    ).parsed

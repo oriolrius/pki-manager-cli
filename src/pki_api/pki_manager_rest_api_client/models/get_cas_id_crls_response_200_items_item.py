@@ -115,7 +115,9 @@ class GetCasIdCrlsResponse200ItemsItem:
         if isinstance(_validity_status, Unset):
             validity_status = UNSET
         else:
-            validity_status = GetCasIdCrlsResponse200ItemsItemValidityStatus(_validity_status)
+            validity_status = GetCasIdCrlsResponse200ItemsItemValidityStatus(
+                _validity_status
+            )
 
         revoked_count = d.pop("revokedCount", UNSET)
 

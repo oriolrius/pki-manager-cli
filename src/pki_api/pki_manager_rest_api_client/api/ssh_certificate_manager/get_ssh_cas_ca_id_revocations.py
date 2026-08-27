@@ -6,6 +6,15 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.get_ssh_cas_ca_id_revocations_response_200_item import (
+    GetSshCasCaIdRevocationsResponse200Item,
+)
+from ...models.get_ssh_cas_ca_id_revocations_response_400 import (
+    GetSshCasCaIdRevocationsResponse400,
+)
+from ...models.get_ssh_cas_ca_id_revocations_response_500 import (
+    GetSshCasCaIdRevocationsResponse500,
+)
 from ...types import Response
 
 
@@ -23,9 +32,35 @@ def _get_kwargs(
     return _kwargs
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | None:
+def _parse_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> (
+    GetSshCasCaIdRevocationsResponse400
+    | GetSshCasCaIdRevocationsResponse500
+    | list[GetSshCasCaIdRevocationsResponse200Item]
+    | None
+):
     if response.status_code == 200:
-        return None
+        response_200 = []
+        _response_200 = response.json()
+        for response_200_item_data in _response_200:
+            response_200_item = GetSshCasCaIdRevocationsResponse200Item.from_dict(
+                response_200_item_data
+            )
+
+            response_200.append(response_200_item)
+
+        return response_200
+
+    if response.status_code == 400:
+        response_400 = GetSshCasCaIdRevocationsResponse400.from_dict(response.json())
+
+        return response_400
+
+    if response.status_code == 500:
+        response_500 = GetSshCasCaIdRevocationsResponse500.from_dict(response.json())
+
+        return response_500
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -33,7 +68,13 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any]:
+def _build_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Response[
+    GetSshCasCaIdRevocationsResponse400
+    | GetSshCasCaIdRevocationsResponse500
+    | list[GetSshCasCaIdRevocationsResponse200Item]
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -46,7 +87,11 @@ def sync_detailed(
     ca_id: str,
     *,
     client: AuthenticatedClient | Client,
-) -> Response[Any]:
+) -> Response[
+    GetSshCasCaIdRevocationsResponse400
+    | GetSshCasCaIdRevocationsResponse500
+    | list[GetSshCasCaIdRevocationsResponse200Item]
+]:
     """List revocations for a CA
 
     Args:
@@ -57,7 +102,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        Response[GetSshCasCaIdRevocationsResponse400 | GetSshCasCaIdRevocationsResponse500 | list[GetSshCasCaIdRevocationsResponse200Item]]
     """
 
     kwargs = _get_kwargs(
@@ -71,11 +116,16 @@ def sync_detailed(
     return _build_response(client=client, response=response)
 
 
-async def asyncio_detailed(
+def sync(
     ca_id: str,
     *,
     client: AuthenticatedClient | Client,
-) -> Response[Any]:
+) -> (
+    GetSshCasCaIdRevocationsResponse400
+    | GetSshCasCaIdRevocationsResponse500
+    | list[GetSshCasCaIdRevocationsResponse200Item]
+    | None
+):
     """List revocations for a CA
 
     Args:
@@ -86,7 +136,35 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        GetSshCasCaIdRevocationsResponse400 | GetSshCasCaIdRevocationsResponse500 | list[GetSshCasCaIdRevocationsResponse200Item]
+    """
+
+    return sync_detailed(
+        ca_id=ca_id,
+        client=client,
+    ).parsed
+
+
+async def asyncio_detailed(
+    ca_id: str,
+    *,
+    client: AuthenticatedClient | Client,
+) -> Response[
+    GetSshCasCaIdRevocationsResponse400
+    | GetSshCasCaIdRevocationsResponse500
+    | list[GetSshCasCaIdRevocationsResponse200Item]
+]:
+    """List revocations for a CA
+
+    Args:
+        ca_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Response[GetSshCasCaIdRevocationsResponse400 | GetSshCasCaIdRevocationsResponse500 | list[GetSshCasCaIdRevocationsResponse200Item]]
     """
 
     kwargs = _get_kwargs(
@@ -96,3 +174,34 @@ async def asyncio_detailed(
     response = await client.get_async_httpx_client().request(**kwargs)
 
     return _build_response(client=client, response=response)
+
+
+async def asyncio(
+    ca_id: str,
+    *,
+    client: AuthenticatedClient | Client,
+) -> (
+    GetSshCasCaIdRevocationsResponse400
+    | GetSshCasCaIdRevocationsResponse500
+    | list[GetSshCasCaIdRevocationsResponse200Item]
+    | None
+):
+    """List revocations for a CA
+
+    Args:
+        ca_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        GetSshCasCaIdRevocationsResponse400 | GetSshCasCaIdRevocationsResponse500 | list[GetSshCasCaIdRevocationsResponse200Item]
+    """
+
+    return (
+        await asyncio_detailed(
+            ca_id=ca_id,
+            client=client,
+        )
+    ).parsed

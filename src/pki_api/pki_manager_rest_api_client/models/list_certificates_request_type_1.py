@@ -7,12 +7,24 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from dateutil.parser import isoparse
 
-from ..models.list_certificates_request_type_1_certificate_type import ListCertificatesRequestType1CertificateType
-from ..models.list_certificates_request_type_1_expiry_status import ListCertificatesRequestType1ExpiryStatus
-from ..models.list_certificates_request_type_1_sort_by import ListCertificatesRequestType1SortBy
-from ..models.list_certificates_request_type_1_sort_order import ListCertificatesRequestType1SortOrder
-from ..models.list_certificates_request_type_1_source_type import ListCertificatesRequestType1SourceType
-from ..models.list_certificates_request_type_1_status import ListCertificatesRequestType1Status
+from ..models.list_certificates_request_type_1_certificate_type import (
+    ListCertificatesRequestType1CertificateType,
+)
+from ..models.list_certificates_request_type_1_expiry_status import (
+    ListCertificatesRequestType1ExpiryStatus,
+)
+from ..models.list_certificates_request_type_1_sort_by import (
+    ListCertificatesRequestType1SortBy,
+)
+from ..models.list_certificates_request_type_1_sort_order import (
+    ListCertificatesRequestType1SortOrder,
+)
+from ..models.list_certificates_request_type_1_source_type import (
+    ListCertificatesRequestType1SourceType,
+)
+from ..models.list_certificates_request_type_1_status import (
+    ListCertificatesRequestType1Status,
+)
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="ListCertificatesRequestType1")
@@ -51,8 +63,12 @@ class ListCertificatesRequestType1:
     expires_after: datetime.datetime | Unset = UNSET
     expires_before: datetime.datetime | Unset = UNSET
     search: str | Unset = UNSET
-    sort_by: ListCertificatesRequestType1SortBy | Unset = ListCertificatesRequestType1SortBy.CREATEDAT
-    sort_order: ListCertificatesRequestType1SortOrder | Unset = ListCertificatesRequestType1SortOrder.DESC
+    sort_by: ListCertificatesRequestType1SortBy | Unset = (
+        ListCertificatesRequestType1SortBy.CREATEDAT
+    )
+    sort_order: ListCertificatesRequestType1SortOrder | Unset = (
+        ListCertificatesRequestType1SortOrder.DESC
+    )
     limit: int | Unset = 50
     offset: int | Unset = 0
 
@@ -160,7 +176,9 @@ class ListCertificatesRequestType1:
         if isinstance(_certificate_type, Unset):
             certificate_type = UNSET
         else:
-            certificate_type = ListCertificatesRequestType1CertificateType(_certificate_type)
+            certificate_type = ListCertificatesRequestType1CertificateType(
+                _certificate_type
+            )
 
         domain = d.pop("domain", UNSET)
 

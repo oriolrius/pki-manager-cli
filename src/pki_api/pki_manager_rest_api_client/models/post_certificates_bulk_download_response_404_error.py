@@ -28,7 +28,9 @@ class PostCertificatesBulkDownloadResponse404Error:
 
     code: str
     message: str
-    details: list[PostCertificatesBulkDownloadResponse404ErrorDetailsItem] | Unset = UNSET
+    details: list[PostCertificatesBulkDownloadResponse404ErrorDetailsItem] | Unset = (
+        UNSET
+    )
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -68,11 +70,17 @@ class PostCertificatesBulkDownloadResponse404Error:
         message = d.pop("message")
 
         _details = d.pop("details", UNSET)
-        details: list[PostCertificatesBulkDownloadResponse404ErrorDetailsItem] | Unset = UNSET
+        details: (
+            list[PostCertificatesBulkDownloadResponse404ErrorDetailsItem] | Unset
+        ) = UNSET
         if _details is not UNSET:
             details = []
             for details_item_data in _details:
-                details_item = PostCertificatesBulkDownloadResponse404ErrorDetailsItem.from_dict(details_item_data)
+                details_item = (
+                    PostCertificatesBulkDownloadResponse404ErrorDetailsItem.from_dict(
+                        details_item_data
+                    )
+                )
 
                 details.append(details_item)
 

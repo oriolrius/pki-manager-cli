@@ -6,7 +6,9 @@ from typing import TYPE_CHECKING, Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.get_search_response_200_results_domains_item_type import GetSearchResponse200ResultsDomainsItemType
+from ..models.get_search_response_200_results_domains_item_type import (
+    GetSearchResponse200ResultsDomainsItemType,
+)
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -100,7 +102,9 @@ class GetSearchResponse200ResultsDomainsItem:
         if isinstance(_metadata, Unset):
             metadata = UNSET
         else:
-            metadata = GetSearchResponse200ResultsDomainsItemMetadata.from_dict(_metadata)
+            metadata = GetSearchResponse200ResultsDomainsItemMetadata.from_dict(
+                _metadata
+            )
 
         get_search_response_200_results_domains_item = cls(
             id=id,

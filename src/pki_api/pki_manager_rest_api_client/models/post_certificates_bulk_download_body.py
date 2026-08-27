@@ -7,7 +7,9 @@ from uuid import UUID
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.post_certificates_bulk_download_body_format import PostCertificatesBulkDownloadBodyFormat
+from ..models.post_certificates_bulk_download_body_format import (
+    PostCertificatesBulkDownloadBodyFormat,
+)
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="PostCertificatesBulkDownloadBody")
@@ -25,7 +27,9 @@ class PostCertificatesBulkDownloadBody:
     """
 
     certificate_ids: list[UUID]
-    format_: PostCertificatesBulkDownloadBodyFormat | Unset = PostCertificatesBulkDownloadBodyFormat.PEM
+    format_: PostCertificatesBulkDownloadBodyFormat | Unset = (
+        PostCertificatesBulkDownloadBodyFormat.PEM
+    )
     password: str | Unset = UNSET
     encrypt_private_key: bool | Unset = True
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)

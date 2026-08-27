@@ -10,6 +10,9 @@ from rich.table import Table
 
 console = Console()
 
+# Status lines go to stderr so `-o json` output stays pipeable into jq.
+err_console = Console(stderr=True)
+
 
 def format_date(dt: datetime | str | None) -> str:
     """Format a datetime for display."""
@@ -55,32 +58,73 @@ def print_ca_table(cas: list[dict]) -> None:
     table.add_column("Expires", style="yellow")
 
     for ca in cas:
+        count = ca.get("certificateCount", ca.get("issuedCertificateCount"))
         table.add_row(
-            ca["id"],
-            extract_cn(ca["subject"]),
-            ca["keyAlgorithm"],
-            format_status(ca["status"]),
-            str(ca.get("certificateCount", 0)),
+            ca.get("id", "-"),
+            extract_cn(subject_of(ca)),
+            ca.get("keyAlgorithm", "-"),
+            format_status(ca.get("status", "-")),
+            str(count) if count is not None else "-",
             format_date(ca.get("notAfter")),
         )
 
     console.print(table)
 
 
+def subject_of(entity: dict) -> str:
+    """Return an entity's subject DN.
+
+    List endpoints return a flat ``subject`` string; detail endpoints return
+    ``subjectDn`` plus a structured ``subject`` object. Accept either.
+    """
+    subject = entity.get("subjectDn") or entity.get("subject")
+    if isinstance(subject, dict):
+        parts = [
+            f"CN={subject['commonName']}" if subject.get("commonName") else None,
+            f"OU={subject['organizationalUnit']}" if subject.get("organizationalUnit") else None,
+            f"O={subject['organization']}" if subject.get("organization") else None,
+            f"L={subject['locality']}" if subject.get("locality") else None,
+            f"ST={subject['state']}" if subject.get("state") else None,
+            f"C={subject['country']}" if subject.get("country") else None,
+        ]
+        return ",".join(p for p in parts if p) or "-"
+    return subject or "-"
+
+
+def _sans(entity: dict) -> str:
+    """Join every SAN type into one display string."""
+    values: list[str] = []
+    for key in ("sanDns", "sanIp", "sanEmail"):
+        values.extend(entity.get(key) or [])
+    return ", ".join(values) if values else "-"
+
+
 def print_ca_detail(ca: dict) -> None:
     """Print CA details."""
     table = Table(show_header=False, box=None)
     table.add_column("Field", style="bold cyan")
-    table.add_column("Value")
+    table.add_column("Value", overflow="fold")
 
-    table.add_row("ID", ca["id"])
-    table.add_row("Subject", ca["subject"])
+    table.add_row("ID", ca.get("id", "-"))
+    table.add_row("Subject", subject_of(ca))
+    if ca.get("issuerDn") and ca.get("issuerDn") != subject_of(ca):
+        table.add_row("Issuer", ca["issuerDn"])
     table.add_row("Serial Number", ca.get("serialNumber", "-"))
-    table.add_row("Key Algorithm", ca["keyAlgorithm"])
-    table.add_row("Status", format_status(ca["status"]))
+    table.add_row("Key Algorithm", ca.get("keyAlgorithm", "-"))
+    table.add_row("Status", format_status(ca.get("status", "-")))
+    if ca.get("validityStatus"):
+        table.add_row("Validity", ca["validityStatus"])
     table.add_row("Valid From", format_date(ca.get("notBefore")))
     table.add_row("Valid Until", format_date(ca.get("notAfter")))
-    table.add_row("Certificates", str(ca.get("certificateCount", 0)))
+    # Detail responses call this issuedCertificateCount; list items certificateCount.
+    count = ca.get("issuedCertificateCount", ca.get("certificateCount"))
+    table.add_row("Certificates", str(count) if count is not None else "-")
+    fingerprints = ca.get("fingerprints") or {}
+    if fingerprints.get("sha256"):
+        table.add_row("SHA-256", fingerprints["sha256"])
+    if ca.get("revocationDate"):
+        table.add_row("Revoked At", format_date(ca["revocationDate"]))
+        table.add_row("Revocation Reason", ca.get("revocationReason") or "-")
     table.add_row("Created", format_date(ca.get("createdAt")))
 
     console.print(Panel(table, title="Certificate Authority", border_style="blue"))
@@ -97,10 +141,10 @@ def print_cert_table(certs: list[dict]) -> None:
 
     for cert in certs:
         table.add_row(
-            cert["id"],
-            extract_cn(cert["subject"]),
-            cert.get("type", "-"),
-            format_status(cert["status"]),
+            cert.get("id", "-"),
+            extract_cn(subject_of(cert)),
+            cert.get("certificateType", cert.get("type", "-")),
+            format_status(cert.get("expiryStatus") or cert.get("status", "-")),
             format_date(cert.get("notAfter")),
         )
 
@@ -111,24 +155,56 @@ def print_cert_detail(cert: dict) -> None:
     """Print certificate details."""
     table = Table(show_header=False, box=None)
     table.add_column("Field", style="bold cyan")
-    table.add_column("Value")
+    table.add_column("Value", overflow="fold")
 
-    table.add_row("ID", cert["id"])
+    table.add_row("ID", cert.get("id", "-"))
     table.add_row("CA ID", cert.get("caId", "-"))
-    table.add_row("Type", cert.get("type", "-"))
-    table.add_row("Subject", cert["subject"])
+    table.add_row("Type", cert.get("certificateType", cert.get("type", "-")))
+    table.add_row("Subject", subject_of(cert))
+    if cert.get("issuerDn"):
+        table.add_row("Issuer", cert["issuerDn"])
+    table.add_row("SANs", _sans(cert))
     table.add_row("Serial Number", cert.get("serialNumber", "-"))
-    table.add_row("Key Algorithm", cert.get("keyAlgorithm", "-"))
-    table.add_row("Status", format_status(cert["status"]))
+    table.add_row("Status", format_status(cert.get("status", "-")))
+    if cert.get("validityStatus"):
+        table.add_row("Validity", cert["validityStatus"])
     table.add_row("Valid From", format_date(cert.get("notBefore")))
     table.add_row("Valid Until", format_date(cert.get("notAfter")))
+    if cert.get("remainingDays") is not None:
+        days = cert["remainingDays"]
+        style = "red" if days <= 7 else "yellow" if days <= 30 else "green"
+        table.add_row("Days Remaining", f"[{style}]{days}[/{style}]")
+    if cert.get("extendedKeyUsage"):
+        table.add_row("Extended Key Usage", ", ".join(cert["extendedKeyUsage"]))
+    fingerprints = cert.get("fingerprints") or {}
+    if fingerprints.get("sha256"):
+        table.add_row("SHA-256", fingerprints["sha256"])
+    if cert.get("renewedFromId"):
+        table.add_row("Renewed From", cert["renewedFromId"])
+    if cert.get("renewedTo"):
+        table.add_row("Renewed To", ", ".join(str(v) for v in cert["renewedTo"]))
     table.add_row("Created", format_date(cert.get("createdAt")))
 
-    if cert.get("revokedAt"):
-        table.add_row("Revoked At", format_date(cert.get("revokedAt")))
-        table.add_row("Revocation Reason", cert.get("revocationReason", "-"))
+    # Detail responses use revocationDate; some list shapes use revokedAt.
+    revoked_at = cert.get("revocationDate") or cert.get("revokedAt")
+    if revoked_at:
+        table.add_row("Revoked At", format_date(revoked_at))
+        table.add_row("Revocation Reason", cert.get("revocationReason") or "-")
 
     console.print(Panel(table, title="Certificate", border_style="green"))
+
+
+# The API returns "totalCAs"/"activeCAs" (capitalised acronym); the other keys
+# are only present on deployments that compute them, so they render as blank.
+_STAT_LABELS = [
+    ("totalCAs", "Total CAs", None),
+    ("activeCAs", "Active CAs", None),
+    ("totalCertificates", "Total Certificates", None),
+    ("activeCertificates", "Active Certificates", None),
+    ("revokedCertificates", "Revoked Certificates", None),
+    ("expiredCertificates", "Expired Certificates", None),
+    ("expiringSoon", "Expiring Soon", "yellow"),
+]
 
 
 def print_stats(stats: dict) -> None:
@@ -137,13 +213,16 @@ def print_stats(stats: dict) -> None:
     table.add_column("Metric", style="cyan")
     table.add_column("Value", justify="right", style="bold")
 
-    table.add_row("Total CAs", str(stats.get("totalCas", 0)))
-    table.add_row("Active CAs", str(stats.get("activeCas", 0)))
-    table.add_row("Total Certificates", str(stats.get("totalCertificates", 0)))
-    table.add_row("Active Certificates", str(stats.get("activeCertificates", 0)))
-    table.add_row("Revoked Certificates", str(stats.get("revokedCertificates", 0)))
-    table.add_row("Expired Certificates", str(stats.get("expiredCertificates", 0)))
-    table.add_row("Expiring Soon", f"[yellow]{stats.get('expiringSoon', 0)}[/yellow]")
+    for key, label, colour in _STAT_LABELS:
+        if key not in stats:
+            continue
+        value = str(stats[key])
+        table.add_row(label, f"[{colour}]{value}[/{colour}]" if colour else value)
+
+    # Surface anything the server added that this CLI doesn't know about yet.
+    for key, value in stats.items():
+        if key not in {k for k, _, _ in _STAT_LABELS}:
+            table.add_row(key, _scalar(value))
 
     console.print(table)
 
@@ -290,15 +369,20 @@ def print_kv(obj: Any, title: str | None = None) -> None:
 
 
 def print_success(message: str) -> None:
-    """Print a success message."""
-    console.print(f"[green]✓[/green] {message}")
+    """Print a success message (to stderr, so JSON output stays pipeable)."""
+    err_console.print(f"[green]✓[/green] {message}")
 
 
 def print_error(message: str) -> None:
-    """Print an error message."""
-    console.print(f"[red]✗[/red] {message}", style="red")
+    """Print an error message (to stderr)."""
+    err_console.print(f"[red]✗[/red] {message}", style="red")
 
 
 def print_warning(message: str) -> None:
-    """Print a warning message."""
-    console.print(f"[yellow]⚠[/yellow] {message}", style="yellow")
+    """Print a warning message (to stderr)."""
+    err_console.print(f"[yellow]⚠[/yellow] {message}", style="yellow")
+
+
+def print_note(message: str) -> None:
+    """Print a dim informational note (to stderr)."""
+    err_console.print(f"[dim]{message}[/dim]")

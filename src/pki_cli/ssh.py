@@ -242,6 +242,22 @@ def host_auth_principals(host_id: Annotated[str, typer.Argument(help="Host ID")]
         _render(authed("GET", f"/ssh/hosts/{host_id}/auth-principals"), output)
 
 
+@host_app.command("mark-pushed")
+def host_mark_pushed(
+    host_id: Annotated[str, typer.Argument(help="Host ID")],
+    output: OutputFormat = "json",
+) -> None:
+    """Mark a host's rendered principal files as pushed (clears its Stale flag).
+
+    Call this after your config-management run has actually copied the files
+    from ``pki ssh host auth-principals`` onto the host.
+    """
+    with _api():
+        data = authed("POST", f"/ssh/hosts/{host_id}/auth-principals/pushed")
+        print_success("Host marked as pushed")
+        _render(data, output)
+
+
 @host_app.command("cert")
 def host_cert(host_id: Annotated[str, typer.Argument(help="Host ID")], output_file: OutFile = None) -> None:
     """Print a host's current certificate (public endpoint)."""

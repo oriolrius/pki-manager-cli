@@ -10,12 +10,18 @@ from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
 from ..models.get_cas_id_response_200_status import GetCasIdResponse200Status
-from ..models.get_cas_id_response_200_validity_status import GetCasIdResponse200ValidityStatus
+from ..models.get_cas_id_response_200_validity_status import (
+    GetCasIdResponse200ValidityStatus,
+)
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.get_cas_id_response_200_extensions import GetCasIdResponse200Extensions
-    from ..models.get_cas_id_response_200_fingerprints import GetCasIdResponse200Fingerprints
+    from ..models.get_cas_id_response_200_extensions import (
+        GetCasIdResponse200Extensions,
+    )
+    from ..models.get_cas_id_response_200_fingerprints import (
+        GetCasIdResponse200Fingerprints,
+    )
     from ..models.get_cas_id_response_200_issuer import GetCasIdResponse200Issuer
     from ..models.get_cas_id_response_200_subject import GetCasIdResponse200Subject
 
@@ -186,8 +192,12 @@ class GetCasIdResponse200:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_cas_id_response_200_extensions import GetCasIdResponse200Extensions
-        from ..models.get_cas_id_response_200_fingerprints import GetCasIdResponse200Fingerprints
+        from ..models.get_cas_id_response_200_extensions import (
+            GetCasIdResponse200Extensions,
+        )
+        from ..models.get_cas_id_response_200_fingerprints import (
+            GetCasIdResponse200Fingerprints,
+        )
         from ..models.get_cas_id_response_200_issuer import GetCasIdResponse200Issuer
         from ..models.get_cas_id_response_200_subject import GetCasIdResponse200Subject
 

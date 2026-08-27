@@ -5,7 +5,9 @@ from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 
-from ..models.bulk_revoke_certificates_request_reason import BulkRevokeCertificatesRequestReason
+from ..models.bulk_revoke_certificates_request_reason import (
+    BulkRevokeCertificatesRequestReason,
+)
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="BulkRevokeCertificatesRequest")

@@ -6,11 +6,15 @@ from typing import TYPE_CHECKING, Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.get_search_response_200_results_cas_item_type import GetSearchResponse200ResultsCasItemType
+from ..models.get_search_response_200_results_cas_item_type import (
+    GetSearchResponse200ResultsCasItemType,
+)
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.get_search_response_200_results_cas_item_metadata import GetSearchResponse200ResultsCasItemMetadata
+    from ..models.get_search_response_200_results_cas_item_metadata import (
+        GetSearchResponse200ResultsCasItemMetadata,
+    )
 
 
 T = TypeVar("T", bound="GetSearchResponse200ResultsCasItem")

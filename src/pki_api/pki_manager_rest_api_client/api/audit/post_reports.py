@@ -34,7 +34,13 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> PostReportsResponse200 | PostReportsResponse400 | PostReportsResponse500 | PostReportsResponse501 | None:
+) -> (
+    PostReportsResponse200
+    | PostReportsResponse400
+    | PostReportsResponse500
+    | PostReportsResponse501
+    | None
+):
     if response.status_code == 200:
         response_200 = PostReportsResponse200.from_dict(response.json())
 
@@ -63,7 +69,12 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[PostReportsResponse200 | PostReportsResponse400 | PostReportsResponse500 | PostReportsResponse501]:
+) -> Response[
+    PostReportsResponse200
+    | PostReportsResponse400
+    | PostReportsResponse500
+    | PostReportsResponse501
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -76,7 +87,12 @@ def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
     body: PostReportsBody,
-) -> Response[PostReportsResponse200 | PostReportsResponse400 | PostReportsResponse500 | PostReportsResponse501]:
+) -> Response[
+    PostReportsResponse200
+    | PostReportsResponse400
+    | PostReportsResponse500
+    | PostReportsResponse501
+]:
     """Generate reports (certificate inventory, revocation, CA operations)
 
     Args:
@@ -105,7 +121,13 @@ def sync(
     *,
     client: AuthenticatedClient | Client,
     body: PostReportsBody,
-) -> PostReportsResponse200 | PostReportsResponse400 | PostReportsResponse500 | PostReportsResponse501 | None:
+) -> (
+    PostReportsResponse200
+    | PostReportsResponse400
+    | PostReportsResponse500
+    | PostReportsResponse501
+    | None
+):
     """Generate reports (certificate inventory, revocation, CA operations)
 
     Args:
@@ -129,7 +151,12 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
     body: PostReportsBody,
-) -> Response[PostReportsResponse200 | PostReportsResponse400 | PostReportsResponse500 | PostReportsResponse501]:
+) -> Response[
+    PostReportsResponse200
+    | PostReportsResponse400
+    | PostReportsResponse500
+    | PostReportsResponse501
+]:
     """Generate reports (certificate inventory, revocation, CA operations)
 
     Args:
@@ -156,7 +183,13 @@ async def asyncio(
     *,
     client: AuthenticatedClient | Client,
     body: PostReportsBody,
-) -> PostReportsResponse200 | PostReportsResponse400 | PostReportsResponse500 | PostReportsResponse501 | None:
+) -> (
+    PostReportsResponse200
+    | PostReportsResponse400
+    | PostReportsResponse500
+    | PostReportsResponse501
+    | None
+):
     """Generate reports (certificate inventory, revocation, CA operations)
 
     Args:

@@ -15,7 +15,9 @@ from ..models.get_certificates_response_200_items_item_certificate_type import (
 from ..models.get_certificates_response_200_items_item_expiry_status import (
     GetCertificatesResponse200ItemsItemExpiryStatus,
 )
-from ..models.get_certificates_response_200_items_item_status import GetCertificatesResponse200ItemsItemStatus
+from ..models.get_certificates_response_200_items_item_status import (
+    GetCertificatesResponse200ItemsItemStatus,
+)
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="GetCertificatesResponse200ItemsItem")
@@ -177,7 +179,9 @@ class GetCertificatesResponse200ItemsItem:
         if isinstance(_certificate_type, Unset):
             certificate_type = UNSET
         else:
-            certificate_type = GetCertificatesResponse200ItemsItemCertificateType(_certificate_type)
+            certificate_type = GetCertificatesResponse200ItemsItemCertificateType(
+                _certificate_type
+            )
 
         _not_before = d.pop("notBefore", UNSET)
         not_before: datetime.datetime | Unset
@@ -205,7 +209,9 @@ class GetCertificatesResponse200ItemsItem:
         if isinstance(_expiry_status, Unset):
             expiry_status = UNSET
         else:
-            expiry_status = GetCertificatesResponse200ItemsItemExpiryStatus(_expiry_status)
+            expiry_status = GetCertificatesResponse200ItemsItemExpiryStatus(
+                _expiry_status
+            )
 
         def _parse_san_dns(data: object) -> list[str] | None | Unset:
             if data is None:

@@ -65,7 +65,9 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[GetCasIdCrlsResponse200 | GetCasIdCrlsResponse404 | GetCasIdCrlsResponse500]:
+) -> Response[
+    GetCasIdCrlsResponse200 | GetCasIdCrlsResponse404 | GetCasIdCrlsResponse500
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -80,7 +82,9 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     limit: int | Unset = 50,
     offset: int | Unset = 0,
-) -> Response[GetCasIdCrlsResponse200 | GetCasIdCrlsResponse404 | GetCasIdCrlsResponse500]:
+) -> Response[
+    GetCasIdCrlsResponse200 | GetCasIdCrlsResponse404 | GetCasIdCrlsResponse500
+]:
     """List all Certificate Revocation Lists (CRLs) for a specific CA
 
     Args:
@@ -145,7 +149,9 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     limit: int | Unset = 50,
     offset: int | Unset = 0,
-) -> Response[GetCasIdCrlsResponse200 | GetCasIdCrlsResponse404 | GetCasIdCrlsResponse500]:
+) -> Response[
+    GetCasIdCrlsResponse200 | GetCasIdCrlsResponse404 | GetCasIdCrlsResponse500
+]:
     """List all Certificate Revocation Lists (CRLs) for a specific CA
 
     Args:

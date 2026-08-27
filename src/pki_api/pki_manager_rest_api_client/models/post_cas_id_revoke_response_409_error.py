@@ -9,7 +9,9 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.post_cas_id_revoke_response_409_error_details_item import PostCasIdRevokeResponse409ErrorDetailsItem
+    from ..models.post_cas_id_revoke_response_409_error_details_item import (
+        PostCasIdRevokeResponse409ErrorDetailsItem,
+    )
 
 
 T = TypeVar("T", bound="PostCasIdRevokeResponse409Error")
@@ -70,7 +72,9 @@ class PostCasIdRevokeResponse409Error:
         if _details is not UNSET:
             details = []
             for details_item_data in _details:
-                details_item = PostCasIdRevokeResponse409ErrorDetailsItem.from_dict(details_item_data)
+                details_item = PostCasIdRevokeResponse409ErrorDetailsItem.from_dict(
+                    details_item_data
+                )
 
                 details.append(details_item)
 

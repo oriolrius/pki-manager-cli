@@ -9,7 +9,9 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.post_certificates_id_renew_body_subject import PostCertificatesIdRenewBodySubject
+    from ..models.post_certificates_id_renew_body_subject import (
+        PostCertificatesIdRenewBodySubject,
+    )
 
 
 T = TypeVar("T", bound="PostCertificatesIdRenewBody")
@@ -88,7 +90,9 @@ class PostCertificatesIdRenewBody:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.post_certificates_id_renew_body_subject import PostCertificatesIdRenewBodySubject
+        from ..models.post_certificates_id_renew_body_subject import (
+            PostCertificatesIdRenewBodySubject,
+        )
 
         d = dict(src_dict)
         generate_new_key = d.pop("generateNewKey", UNSET)

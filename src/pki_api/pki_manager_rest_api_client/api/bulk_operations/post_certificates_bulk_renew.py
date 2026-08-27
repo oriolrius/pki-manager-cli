@@ -6,9 +6,15 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.post_certificates_bulk_renew_body import PostCertificatesBulkRenewBody
-from ...models.post_certificates_bulk_renew_response_201 import PostCertificatesBulkRenewResponse201
-from ...models.post_certificates_bulk_renew_response_400 import PostCertificatesBulkRenewResponse400
-from ...models.post_certificates_bulk_renew_response_500 import PostCertificatesBulkRenewResponse500
+from ...models.post_certificates_bulk_renew_response_201 import (
+    PostCertificatesBulkRenewResponse201,
+)
+from ...models.post_certificates_bulk_renew_response_400 import (
+    PostCertificatesBulkRenewResponse400,
+)
+from ...models.post_certificates_bulk_renew_response_500 import (
+    PostCertificatesBulkRenewResponse500,
+)
 from ...types import Response
 
 
@@ -63,7 +69,9 @@ def _parse_response(
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
 ) -> Response[
-    PostCertificatesBulkRenewResponse201 | PostCertificatesBulkRenewResponse400 | PostCertificatesBulkRenewResponse500
+    PostCertificatesBulkRenewResponse201
+    | PostCertificatesBulkRenewResponse400
+    | PostCertificatesBulkRenewResponse500
 ]:
     return Response(
         status_code=HTTPStatus(response.status_code),
@@ -78,7 +86,9 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     body: PostCertificatesBulkRenewBody,
 ) -> Response[
-    PostCertificatesBulkRenewResponse201 | PostCertificatesBulkRenewResponse400 | PostCertificatesBulkRenewResponse500
+    PostCertificatesBulkRenewResponse201
+    | PostCertificatesBulkRenewResponse400
+    | PostCertificatesBulkRenewResponse500
 ]:
     """Bulk renew certificates
 
@@ -138,7 +148,9 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     body: PostCertificatesBulkRenewBody,
 ) -> Response[
-    PostCertificatesBulkRenewResponse201 | PostCertificatesBulkRenewResponse400 | PostCertificatesBulkRenewResponse500
+    PostCertificatesBulkRenewResponse201
+    | PostCertificatesBulkRenewResponse400
+    | PostCertificatesBulkRenewResponse500
 ]:
     """Bulk renew certificates
 

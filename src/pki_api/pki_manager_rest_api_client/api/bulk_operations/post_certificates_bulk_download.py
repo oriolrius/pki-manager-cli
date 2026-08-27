@@ -5,11 +5,21 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.post_certificates_bulk_download_body import PostCertificatesBulkDownloadBody
-from ...models.post_certificates_bulk_download_response_200 import PostCertificatesBulkDownloadResponse200
-from ...models.post_certificates_bulk_download_response_400 import PostCertificatesBulkDownloadResponse400
-from ...models.post_certificates_bulk_download_response_404 import PostCertificatesBulkDownloadResponse404
-from ...models.post_certificates_bulk_download_response_500 import PostCertificatesBulkDownloadResponse500
+from ...models.post_certificates_bulk_download_body import (
+    PostCertificatesBulkDownloadBody,
+)
+from ...models.post_certificates_bulk_download_response_200 import (
+    PostCertificatesBulkDownloadResponse200,
+)
+from ...models.post_certificates_bulk_download_response_400 import (
+    PostCertificatesBulkDownloadResponse400,
+)
+from ...models.post_certificates_bulk_download_response_404 import (
+    PostCertificatesBulkDownloadResponse404,
+)
+from ...models.post_certificates_bulk_download_response_500 import (
+    PostCertificatesBulkDownloadResponse500,
+)
 from ...types import Response
 
 
@@ -42,22 +52,30 @@ def _parse_response(
     | None
 ):
     if response.status_code == 200:
-        response_200 = PostCertificatesBulkDownloadResponse200.from_dict(response.json())
+        response_200 = PostCertificatesBulkDownloadResponse200.from_dict(
+            response.json()
+        )
 
         return response_200
 
     if response.status_code == 400:
-        response_400 = PostCertificatesBulkDownloadResponse400.from_dict(response.json())
+        response_400 = PostCertificatesBulkDownloadResponse400.from_dict(
+            response.json()
+        )
 
         return response_400
 
     if response.status_code == 404:
-        response_404 = PostCertificatesBulkDownloadResponse404.from_dict(response.json())
+        response_404 = PostCertificatesBulkDownloadResponse404.from_dict(
+            response.json()
+        )
 
         return response_404
 
     if response.status_code == 500:
-        response_500 = PostCertificatesBulkDownloadResponse500.from_dict(response.json())
+        response_500 = PostCertificatesBulkDownloadResponse500.from_dict(
+            response.json()
+        )
 
         return response_500
 

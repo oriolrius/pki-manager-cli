@@ -5,7 +5,9 @@ from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 
-from ..models.bulk_download_certificates_request_format import BulkDownloadCertificatesRequestFormat
+from ..models.bulk_download_certificates_request_format import (
+    BulkDownloadCertificatesRequestFormat,
+)
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="BulkDownloadCertificatesRequest")
@@ -22,7 +24,9 @@ class BulkDownloadCertificatesRequest:
     """
 
     certificate_ids: list[str]
-    format_: BulkDownloadCertificatesRequestFormat | Unset = BulkDownloadCertificatesRequestFormat.PEM
+    format_: BulkDownloadCertificatesRequestFormat | Unset = (
+        BulkDownloadCertificatesRequestFormat.PEM
+    )
     password: str | Unset = UNSET
     encrypt_private_key: bool | Unset = True
 

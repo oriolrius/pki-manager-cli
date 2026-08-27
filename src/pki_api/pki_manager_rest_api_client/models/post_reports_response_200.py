@@ -80,7 +80,9 @@ class PostReportsResponse200:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.post_reports_response_200_summary import PostReportsResponse200Summary
+        from ..models.post_reports_response_200_summary import (
+            PostReportsResponse200Summary,
+        )
 
         d = dict(src_dict)
         report_name = d.pop("reportName", UNSET)

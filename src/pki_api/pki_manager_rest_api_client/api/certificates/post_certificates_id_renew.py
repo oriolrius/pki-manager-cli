@@ -8,17 +8,25 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.post_certificates_id_renew_body import PostCertificatesIdRenewBody
-from ...models.post_certificates_id_renew_response_201 import PostCertificatesIdRenewResponse201
-from ...models.post_certificates_id_renew_response_404 import PostCertificatesIdRenewResponse404
-from ...models.post_certificates_id_renew_response_409 import PostCertificatesIdRenewResponse409
-from ...models.post_certificates_id_renew_response_500 import PostCertificatesIdRenewResponse500
-from ...types import UNSET, Response, Unset
+from ...models.post_certificates_id_renew_response_201 import (
+    PostCertificatesIdRenewResponse201,
+)
+from ...models.post_certificates_id_renew_response_404 import (
+    PostCertificatesIdRenewResponse404,
+)
+from ...models.post_certificates_id_renew_response_409 import (
+    PostCertificatesIdRenewResponse409,
+)
+from ...models.post_certificates_id_renew_response_500 import (
+    PostCertificatesIdRenewResponse500,
+)
+from ...types import Response
 
 
 def _get_kwargs(
     id: UUID,
     *,
-    body: PostCertificatesIdRenewBody | Unset = UNSET,
+    body: PostCertificatesIdRenewBody,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
@@ -29,8 +37,7 @@ def _get_kwargs(
         ),
     }
 
-    if not isinstance(body, Unset):
-        _kwargs["json"] = body.to_dict()
+    _kwargs["json"] = body.to_dict()
 
     headers["Content-Type"] = "application/json"
 
@@ -93,7 +100,7 @@ def sync_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: PostCertificatesIdRenewBody | Unset = UNSET,
+    body: PostCertificatesIdRenewBody,
 ) -> Response[
     PostCertificatesIdRenewResponse201
     | PostCertificatesIdRenewResponse404
@@ -104,7 +111,7 @@ def sync_detailed(
 
     Args:
         id (UUID):
-        body (PostCertificatesIdRenewBody | Unset):
+        body (PostCertificatesIdRenewBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -130,7 +137,7 @@ def sync(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: PostCertificatesIdRenewBody | Unset = UNSET,
+    body: PostCertificatesIdRenewBody,
 ) -> (
     PostCertificatesIdRenewResponse201
     | PostCertificatesIdRenewResponse404
@@ -142,7 +149,7 @@ def sync(
 
     Args:
         id (UUID):
-        body (PostCertificatesIdRenewBody | Unset):
+        body (PostCertificatesIdRenewBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -163,7 +170,7 @@ async def asyncio_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: PostCertificatesIdRenewBody | Unset = UNSET,
+    body: PostCertificatesIdRenewBody,
 ) -> Response[
     PostCertificatesIdRenewResponse201
     | PostCertificatesIdRenewResponse404
@@ -174,7 +181,7 @@ async def asyncio_detailed(
 
     Args:
         id (UUID):
-        body (PostCertificatesIdRenewBody | Unset):
+        body (PostCertificatesIdRenewBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -198,7 +205,7 @@ async def asyncio(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: PostCertificatesIdRenewBody | Unset = UNSET,
+    body: PostCertificatesIdRenewBody,
 ) -> (
     PostCertificatesIdRenewResponse201
     | PostCertificatesIdRenewResponse404
@@ -210,7 +217,7 @@ async def asyncio(
 
     Args:
         id (UUID):
-        body (PostCertificatesIdRenewBody | Unset):
+        body (PostCertificatesIdRenewBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

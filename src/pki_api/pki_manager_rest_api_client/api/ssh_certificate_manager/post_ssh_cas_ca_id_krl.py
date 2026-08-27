@@ -6,6 +6,9 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.post_ssh_cas_ca_id_krl_response_200 import PostSshCasCaIdKrlResponse200
+from ...models.post_ssh_cas_ca_id_krl_response_400 import PostSshCasCaIdKrlResponse400
+from ...models.post_ssh_cas_ca_id_krl_response_500 import PostSshCasCaIdKrlResponse500
 from ...types import Response
 
 
@@ -23,9 +26,28 @@ def _get_kwargs(
     return _kwargs
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | None:
+def _parse_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> (
+    PostSshCasCaIdKrlResponse200
+    | PostSshCasCaIdKrlResponse400
+    | PostSshCasCaIdKrlResponse500
+    | None
+):
     if response.status_code == 200:
-        return None
+        response_200 = PostSshCasCaIdKrlResponse200.from_dict(response.json())
+
+        return response_200
+
+    if response.status_code == 400:
+        response_400 = PostSshCasCaIdKrlResponse400.from_dict(response.json())
+
+        return response_400
+
+    if response.status_code == 500:
+        response_500 = PostSshCasCaIdKrlResponse500.from_dict(response.json())
+
+        return response_500
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -33,7 +55,13 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any]:
+def _build_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Response[
+    PostSshCasCaIdKrlResponse200
+    | PostSshCasCaIdKrlResponse400
+    | PostSshCasCaIdKrlResponse500
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -46,7 +74,11 @@ def sync_detailed(
     ca_id: str,
     *,
     client: AuthenticatedClient | Client,
-) -> Response[Any]:
+) -> Response[
+    PostSshCasCaIdKrlResponse200
+    | PostSshCasCaIdKrlResponse400
+    | PostSshCasCaIdKrlResponse500
+]:
     """Generate / rebuild the KRL for a CA
 
     Args:
@@ -57,7 +89,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        Response[PostSshCasCaIdKrlResponse200 | PostSshCasCaIdKrlResponse400 | PostSshCasCaIdKrlResponse500]
     """
 
     kwargs = _get_kwargs(
@@ -71,11 +103,16 @@ def sync_detailed(
     return _build_response(client=client, response=response)
 
 
-async def asyncio_detailed(
+def sync(
     ca_id: str,
     *,
     client: AuthenticatedClient | Client,
-) -> Response[Any]:
+) -> (
+    PostSshCasCaIdKrlResponse200
+    | PostSshCasCaIdKrlResponse400
+    | PostSshCasCaIdKrlResponse500
+    | None
+):
     """Generate / rebuild the KRL for a CA
 
     Args:
@@ -86,7 +123,35 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        PostSshCasCaIdKrlResponse200 | PostSshCasCaIdKrlResponse400 | PostSshCasCaIdKrlResponse500
+    """
+
+    return sync_detailed(
+        ca_id=ca_id,
+        client=client,
+    ).parsed
+
+
+async def asyncio_detailed(
+    ca_id: str,
+    *,
+    client: AuthenticatedClient | Client,
+) -> Response[
+    PostSshCasCaIdKrlResponse200
+    | PostSshCasCaIdKrlResponse400
+    | PostSshCasCaIdKrlResponse500
+]:
+    """Generate / rebuild the KRL for a CA
+
+    Args:
+        ca_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Response[PostSshCasCaIdKrlResponse200 | PostSshCasCaIdKrlResponse400 | PostSshCasCaIdKrlResponse500]
     """
 
     kwargs = _get_kwargs(
@@ -96,3 +161,34 @@ async def asyncio_detailed(
     response = await client.get_async_httpx_client().request(**kwargs)
 
     return _build_response(client=client, response=response)
+
+
+async def asyncio(
+    ca_id: str,
+    *,
+    client: AuthenticatedClient | Client,
+) -> (
+    PostSshCasCaIdKrlResponse200
+    | PostSshCasCaIdKrlResponse400
+    | PostSshCasCaIdKrlResponse500
+    | None
+):
+    """Generate / rebuild the KRL for a CA
+
+    Args:
+        ca_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        PostSshCasCaIdKrlResponse200 | PostSshCasCaIdKrlResponse400 | PostSshCasCaIdKrlResponse500
+    """
+
+    return (
+        await asyncio_detailed(
+            ca_id=ca_id,
+            client=client,
+        )
+    ).parsed

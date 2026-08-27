@@ -7,10 +7,18 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.get_cas_id_certificates_certificate_type import GetCasIdCertificatesCertificateType
-from ...models.get_cas_id_certificates_response_200 import GetCasIdCertificatesResponse200
-from ...models.get_cas_id_certificates_response_404 import GetCasIdCertificatesResponse404
-from ...models.get_cas_id_certificates_response_500 import GetCasIdCertificatesResponse500
+from ...models.get_cas_id_certificates_certificate_type import (
+    GetCasIdCertificatesCertificateType,
+)
+from ...models.get_cas_id_certificates_response_200 import (
+    GetCasIdCertificatesResponse200,
+)
+from ...models.get_cas_id_certificates_response_404 import (
+    GetCasIdCertificatesResponse404,
+)
+from ...models.get_cas_id_certificates_response_500 import (
+    GetCasIdCertificatesResponse500,
+)
 from ...models.get_cas_id_certificates_status import GetCasIdCertificatesStatus
 from ...types import UNSET, Response, Unset
 
@@ -60,7 +68,12 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> GetCasIdCertificatesResponse200 | GetCasIdCertificatesResponse404 | GetCasIdCertificatesResponse500 | None:
+) -> (
+    GetCasIdCertificatesResponse200
+    | GetCasIdCertificatesResponse404
+    | GetCasIdCertificatesResponse500
+    | None
+):
     if response.status_code == 200:
         response_200 = GetCasIdCertificatesResponse200.from_dict(response.json())
 
@@ -84,7 +97,11 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[GetCasIdCertificatesResponse200 | GetCasIdCertificatesResponse404 | GetCasIdCertificatesResponse500]:
+) -> Response[
+    GetCasIdCertificatesResponse200
+    | GetCasIdCertificatesResponse404
+    | GetCasIdCertificatesResponse500
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -102,7 +119,11 @@ def sync_detailed(
     search: str | Unset = UNSET,
     limit: int | Unset = 50,
     offset: int | Unset = 0,
-) -> Response[GetCasIdCertificatesResponse200 | GetCasIdCertificatesResponse404 | GetCasIdCertificatesResponse500]:
+) -> Response[
+    GetCasIdCertificatesResponse200
+    | GetCasIdCertificatesResponse404
+    | GetCasIdCertificatesResponse500
+]:
     """List all certificates issued by a specific Certificate Authority
 
     Args:
@@ -146,7 +167,12 @@ def sync(
     search: str | Unset = UNSET,
     limit: int | Unset = 50,
     offset: int | Unset = 0,
-) -> GetCasIdCertificatesResponse200 | GetCasIdCertificatesResponse404 | GetCasIdCertificatesResponse500 | None:
+) -> (
+    GetCasIdCertificatesResponse200
+    | GetCasIdCertificatesResponse404
+    | GetCasIdCertificatesResponse500
+    | None
+):
     """List all certificates issued by a specific Certificate Authority
 
     Args:
@@ -185,7 +211,11 @@ async def asyncio_detailed(
     search: str | Unset = UNSET,
     limit: int | Unset = 50,
     offset: int | Unset = 0,
-) -> Response[GetCasIdCertificatesResponse200 | GetCasIdCertificatesResponse404 | GetCasIdCertificatesResponse500]:
+) -> Response[
+    GetCasIdCertificatesResponse200
+    | GetCasIdCertificatesResponse404
+    | GetCasIdCertificatesResponse500
+]:
     """List all certificates issued by a specific Certificate Authority
 
     Args:
@@ -227,7 +257,12 @@ async def asyncio(
     search: str | Unset = UNSET,
     limit: int | Unset = 50,
     offset: int | Unset = 0,
-) -> GetCasIdCertificatesResponse200 | GetCasIdCertificatesResponse404 | GetCasIdCertificatesResponse500 | None:
+) -> (
+    GetCasIdCertificatesResponse200
+    | GetCasIdCertificatesResponse404
+    | GetCasIdCertificatesResponse500
+    | None
+):
     """List all certificates issued by a specific Certificate Authority
 
     Args:

@@ -38,7 +38,9 @@ class DeleteCasIdResponse404:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.delete_cas_id_response_404_error import DeleteCasIdResponse404Error
+        from ..models.delete_cas_id_response_404_error import (
+            DeleteCasIdResponse404Error,
+        )
 
         d = dict(src_dict)
         error = DeleteCasIdResponse404Error.from_dict(d.pop("error"))

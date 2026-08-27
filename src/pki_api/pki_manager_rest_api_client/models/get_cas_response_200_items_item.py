@@ -9,7 +9,9 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
-from ..models.get_cas_response_200_items_item_status import GetCasResponse200ItemsItemStatus
+from ..models.get_cas_response_200_items_item_status import (
+    GetCasResponse200ItemsItemStatus,
+)
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="GetCasResponse200ItemsItem")

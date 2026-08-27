@@ -9,8 +9,12 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.get_cas_id_certificates_response_200_items_item import GetCasIdCertificatesResponse200ItemsItem
-    from ..models.get_cas_id_certificates_response_200_pagination import GetCasIdCertificatesResponse200Pagination
+    from ..models.get_cas_id_certificates_response_200_items_item import (
+        GetCasIdCertificatesResponse200ItemsItem,
+    )
+    from ..models.get_cas_id_certificates_response_200_pagination import (
+        GetCasIdCertificatesResponse200Pagination,
+    )
 
 
 T = TypeVar("T", bound="GetCasIdCertificatesResponse200")
@@ -52,8 +56,12 @@ class GetCasIdCertificatesResponse200:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_cas_id_certificates_response_200_items_item import GetCasIdCertificatesResponse200ItemsItem
-        from ..models.get_cas_id_certificates_response_200_pagination import GetCasIdCertificatesResponse200Pagination
+        from ..models.get_cas_id_certificates_response_200_items_item import (
+            GetCasIdCertificatesResponse200ItemsItem,
+        )
+        from ..models.get_cas_id_certificates_response_200_pagination import (
+            GetCasIdCertificatesResponse200Pagination,
+        )
 
         d = dict(src_dict)
         _items = d.pop("items", UNSET)
@@ -61,7 +69,9 @@ class GetCasIdCertificatesResponse200:
         if _items is not UNSET:
             items = []
             for items_item_data in _items:
-                items_item = GetCasIdCertificatesResponse200ItemsItem.from_dict(items_item_data)
+                items_item = GetCasIdCertificatesResponse200ItemsItem.from_dict(
+                    items_item_data
+                )
 
                 items.append(items_item)
 
@@ -70,7 +80,9 @@ class GetCasIdCertificatesResponse200:
         if isinstance(_pagination, Unset):
             pagination = UNSET
         else:
-            pagination = GetCasIdCertificatesResponse200Pagination.from_dict(_pagination)
+            pagination = GetCasIdCertificatesResponse200Pagination.from_dict(
+                _pagination
+            )
 
         get_cas_id_certificates_response_200 = cls(
             items=items,

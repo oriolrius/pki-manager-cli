@@ -26,7 +26,9 @@ class CreateCaRequest:
     """
 
     subject: CreateCaRequestSubject
-    key_algorithm: CreateCaRequestKeyAlgorithm | Unset = CreateCaRequestKeyAlgorithm.RSA_4096
+    key_algorithm: CreateCaRequestKeyAlgorithm | Unset = (
+        CreateCaRequestKeyAlgorithm.RSA_4096
+    )
     validity_years: int | Unset = 20
     tags: list[str] | Unset = UNSET
 

@@ -8,7 +8,9 @@ from attrs import define as _attrs_define
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.renew_certificate_request_subject import RenewCertificateRequestSubject
+    from ..models.renew_certificate_request_subject import (
+        RenewCertificateRequestSubject,
+    )
 
 
 T = TypeVar("T", bound="RenewCertificateRequest")
@@ -94,7 +96,9 @@ class RenewCertificateRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.renew_certificate_request_subject import RenewCertificateRequestSubject
+        from ..models.renew_certificate_request_subject import (
+            RenewCertificateRequestSubject,
+        )
 
         d = dict(src_dict)
         id = d.pop("id")

@@ -8,11 +8,15 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
-from ..models.get_audit_response_200_items_item_status import GetAuditResponse200ItemsItemStatus
+from ..models.get_audit_response_200_items_item_status import (
+    GetAuditResponse200ItemsItemStatus,
+)
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.get_audit_response_200_items_item_details_type_0 import GetAuditResponse200ItemsItemDetailsType0
+    from ..models.get_audit_response_200_items_item_details_type_0 import (
+        GetAuditResponse200ItemsItemDetailsType0,
+    )
 
 
 T = TypeVar("T", bound="GetAuditResponse200ItemsItem")
@@ -43,7 +47,9 @@ class GetAuditResponse200ItemsItem:
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.get_audit_response_200_items_item_details_type_0 import GetAuditResponse200ItemsItemDetailsType0
+        from ..models.get_audit_response_200_items_item_details_type_0 import (
+            GetAuditResponse200ItemsItemDetailsType0,
+        )
 
         id = self.id
 
@@ -103,7 +109,9 @@ class GetAuditResponse200ItemsItem:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_audit_response_200_items_item_details_type_0 import GetAuditResponse200ItemsItemDetailsType0
+        from ..models.get_audit_response_200_items_item_details_type_0 import (
+            GetAuditResponse200ItemsItemDetailsType0,
+        )
 
         d = dict(src_dict)
         id = d.pop("id", UNSET)
@@ -144,7 +152,9 @@ class GetAuditResponse200ItemsItem:
         else:
             status = GetAuditResponse200ItemsItemStatus(_status)
 
-        def _parse_details(data: object) -> GetAuditResponse200ItemsItemDetailsType0 | None | Unset:
+        def _parse_details(
+            data: object,
+        ) -> GetAuditResponse200ItemsItemDetailsType0 | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -152,7 +162,9 @@ class GetAuditResponse200ItemsItem:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                details_type_0 = GetAuditResponse200ItemsItemDetailsType0.from_dict(data)
+                details_type_0 = GetAuditResponse200ItemsItemDetailsType0.from_dict(
+                    data
+                )
 
                 return details_type_0
             except (TypeError, ValueError, AttributeError, KeyError):

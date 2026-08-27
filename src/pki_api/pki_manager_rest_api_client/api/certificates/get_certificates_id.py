@@ -29,7 +29,12 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> GetCertificatesIdResponse200 | GetCertificatesIdResponse404 | GetCertificatesIdResponse500 | None:
+) -> (
+    GetCertificatesIdResponse200
+    | GetCertificatesIdResponse404
+    | GetCertificatesIdResponse500
+    | None
+):
     if response.status_code == 200:
         response_200 = GetCertificatesIdResponse200.from_dict(response.json())
 
@@ -53,7 +58,11 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[GetCertificatesIdResponse200 | GetCertificatesIdResponse404 | GetCertificatesIdResponse500]:
+) -> Response[
+    GetCertificatesIdResponse200
+    | GetCertificatesIdResponse404
+    | GetCertificatesIdResponse500
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -66,7 +75,11 @@ def sync_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-) -> Response[GetCertificatesIdResponse200 | GetCertificatesIdResponse404 | GetCertificatesIdResponse500]:
+) -> Response[
+    GetCertificatesIdResponse200
+    | GetCertificatesIdResponse404
+    | GetCertificatesIdResponse500
+]:
     """Get detailed information about a specific certificate
 
     Args:
@@ -95,7 +108,12 @@ def sync(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-) -> GetCertificatesIdResponse200 | GetCertificatesIdResponse404 | GetCertificatesIdResponse500 | None:
+) -> (
+    GetCertificatesIdResponse200
+    | GetCertificatesIdResponse404
+    | GetCertificatesIdResponse500
+    | None
+):
     """Get detailed information about a specific certificate
 
     Args:
@@ -119,7 +137,11 @@ async def asyncio_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-) -> Response[GetCertificatesIdResponse200 | GetCertificatesIdResponse404 | GetCertificatesIdResponse500]:
+) -> Response[
+    GetCertificatesIdResponse200
+    | GetCertificatesIdResponse404
+    | GetCertificatesIdResponse500
+]:
     """Get detailed information about a specific certificate
 
     Args:
@@ -146,7 +168,12 @@ async def asyncio(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-) -> GetCertificatesIdResponse200 | GetCertificatesIdResponse404 | GetCertificatesIdResponse500 | None:
+) -> (
+    GetCertificatesIdResponse200
+    | GetCertificatesIdResponse404
+    | GetCertificatesIdResponse500
+    | None
+):
     """Get detailed information about a specific certificate
 
     Args:

@@ -9,8 +9,12 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.get_cas_id_crls_response_200_items_item import GetCasIdCrlsResponse200ItemsItem
-    from ..models.get_cas_id_crls_response_200_pagination import GetCasIdCrlsResponse200Pagination
+    from ..models.get_cas_id_crls_response_200_items_item import (
+        GetCasIdCrlsResponse200ItemsItem,
+    )
+    from ..models.get_cas_id_crls_response_200_pagination import (
+        GetCasIdCrlsResponse200Pagination,
+    )
 
 
 T = TypeVar("T", bound="GetCasIdCrlsResponse200")
@@ -52,8 +56,12 @@ class GetCasIdCrlsResponse200:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_cas_id_crls_response_200_items_item import GetCasIdCrlsResponse200ItemsItem
-        from ..models.get_cas_id_crls_response_200_pagination import GetCasIdCrlsResponse200Pagination
+        from ..models.get_cas_id_crls_response_200_items_item import (
+            GetCasIdCrlsResponse200ItemsItem,
+        )
+        from ..models.get_cas_id_crls_response_200_pagination import (
+            GetCasIdCrlsResponse200Pagination,
+        )
 
         d = dict(src_dict)
         _items = d.pop("items", UNSET)

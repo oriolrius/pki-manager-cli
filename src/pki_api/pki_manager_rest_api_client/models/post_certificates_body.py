@@ -7,8 +7,12 @@ from uuid import UUID
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.post_certificates_body_certificate_type import PostCertificatesBodyCertificateType
-from ..models.post_certificates_body_key_algorithm import PostCertificatesBodyKeyAlgorithm
+from ..models.post_certificates_body_certificate_type import (
+    PostCertificatesBodyCertificateType,
+)
+from ..models.post_certificates_body_key_algorithm import (
+    PostCertificatesBodyKeyAlgorithm,
+)
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:

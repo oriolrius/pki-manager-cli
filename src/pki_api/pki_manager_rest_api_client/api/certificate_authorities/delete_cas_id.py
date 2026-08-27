@@ -39,7 +39,13 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> DeleteCasIdResponse200 | DeleteCasIdResponse404 | DeleteCasIdResponse409 | DeleteCasIdResponse500 | None:
+) -> (
+    DeleteCasIdResponse200
+    | DeleteCasIdResponse404
+    | DeleteCasIdResponse409
+    | DeleteCasIdResponse500
+    | None
+):
     if response.status_code == 200:
         response_200 = DeleteCasIdResponse200.from_dict(response.json())
 
@@ -68,7 +74,12 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[DeleteCasIdResponse200 | DeleteCasIdResponse404 | DeleteCasIdResponse409 | DeleteCasIdResponse500]:
+) -> Response[
+    DeleteCasIdResponse200
+    | DeleteCasIdResponse404
+    | DeleteCasIdResponse409
+    | DeleteCasIdResponse500
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -82,7 +93,12 @@ def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
     destroy_key: bool | Unset = False,
-) -> Response[DeleteCasIdResponse200 | DeleteCasIdResponse404 | DeleteCasIdResponse409 | DeleteCasIdResponse500]:
+) -> Response[
+    DeleteCasIdResponse200
+    | DeleteCasIdResponse404
+    | DeleteCasIdResponse409
+    | DeleteCasIdResponse500
+]:
     """Delete a revoked or expired Certificate Authority. The CA must be revoked or expired and have no
     active certificates.
 
@@ -115,7 +131,13 @@ def sync(
     *,
     client: AuthenticatedClient | Client,
     destroy_key: bool | Unset = False,
-) -> DeleteCasIdResponse200 | DeleteCasIdResponse404 | DeleteCasIdResponse409 | DeleteCasIdResponse500 | None:
+) -> (
+    DeleteCasIdResponse200
+    | DeleteCasIdResponse404
+    | DeleteCasIdResponse409
+    | DeleteCasIdResponse500
+    | None
+):
     """Delete a revoked or expired Certificate Authority. The CA must be revoked or expired and have no
     active certificates.
 
@@ -143,7 +165,12 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
     destroy_key: bool | Unset = False,
-) -> Response[DeleteCasIdResponse200 | DeleteCasIdResponse404 | DeleteCasIdResponse409 | DeleteCasIdResponse500]:
+) -> Response[
+    DeleteCasIdResponse200
+    | DeleteCasIdResponse404
+    | DeleteCasIdResponse409
+    | DeleteCasIdResponse500
+]:
     """Delete a revoked or expired Certificate Authority. The CA must be revoked or expired and have no
     active certificates.
 
@@ -174,7 +201,13 @@ async def asyncio(
     *,
     client: AuthenticatedClient | Client,
     destroy_key: bool | Unset = False,
-) -> DeleteCasIdResponse200 | DeleteCasIdResponse404 | DeleteCasIdResponse409 | DeleteCasIdResponse500 | None:
+) -> (
+    DeleteCasIdResponse200
+    | DeleteCasIdResponse404
+    | DeleteCasIdResponse409
+    | DeleteCasIdResponse500
+    | None
+):
     """Delete a revoked or expired Certificate Authority. The CA must be revoked or expired and have no
     active certificates.
 

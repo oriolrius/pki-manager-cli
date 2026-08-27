@@ -9,7 +9,9 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.get_cas_id_download_response_500_error_details_item import GetCasIdDownloadResponse500ErrorDetailsItem
+    from ..models.get_cas_id_download_response_500_error_details_item import (
+        GetCasIdDownloadResponse500ErrorDetailsItem,
+    )
 
 
 T = TypeVar("T", bound="GetCasIdDownloadResponse500Error")
@@ -70,7 +72,9 @@ class GetCasIdDownloadResponse500Error:
         if _details is not UNSET:
             details = []
             for details_item_data in _details:
-                details_item = GetCasIdDownloadResponse500ErrorDetailsItem.from_dict(details_item_data)
+                details_item = GetCasIdDownloadResponse500ErrorDetailsItem.from_dict(
+                    details_item_data
+                )
 
                 details.append(details_item)
 

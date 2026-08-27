@@ -1,14 +1,12 @@
 """PKI Manager API client wrapper with OIDC authentication."""
 
 import json
-import sys
 import time
-from pathlib import Path
 from typing import Optional
 
 import httpx
 
-from pki_api.pki_manager_rest_api_client import AuthenticatedClient
+from pki_api.pki_manager_rest_api_client import AuthenticatedClient, Client
 
 from .config import Settings, get_settings
 
@@ -50,10 +48,22 @@ class TokenManager:
         if self.cache_file.exists():
             self.cache_file.unlink()
 
-    def get_token(self) -> str:
-        """Get a valid access token, using cache if available."""
+    def get_token(self) -> Optional[str]:
+        """Get a valid access token, using cache if available.
+
+        Returns ``None`` when the CLI is configured for anonymous access (no
+        ``PKI_TOKEN`` and no OIDC credentials), which is what deployments
+        running with ``OIDC_ENABLED=false`` expect.
+        """
         # Validate configuration is complete
         self.settings.validate_config()
+
+        # A pre-obtained token short-circuits the OIDC exchange entirely
+        if self.settings.token:
+            return self.settings.token
+
+        if not self.settings.has_oidc:
+            return None
 
         # Try cache first
         cached = self._get_cached_token()
@@ -92,16 +102,21 @@ class PKIClientWrapper:
         self.settings = settings or get_settings()
         self.token_manager = TokenManager(self.settings)
 
-    def get_client(self) -> AuthenticatedClient:
-        """Get an authenticated client instance."""
+    def get_client(self) -> AuthenticatedClient | Client:
+        """Get a client instance, authenticated when credentials are available."""
         token = self.token_manager.get_token()
+        if token is None:
+            return Client(
+                base_url=self.settings.api_url,
+                raise_on_unexpected_status=True,
+            )
         return AuthenticatedClient(
             base_url=self.settings.api_url,
             token=token,
             raise_on_unexpected_status=True,
         )
 
-    def refresh_token(self) -> AuthenticatedClient:
+    def refresh_token(self) -> AuthenticatedClient | Client:
         """Clear cache and get a fresh token."""
         self.token_manager.clear_cache()
         return self.get_client()
@@ -119,6 +134,12 @@ def get_wrapper() -> PKIClientWrapper:
     return _wrapper
 
 
-def get_client() -> AuthenticatedClient:
-    """Get an authenticated client for API calls."""
+def get_client() -> AuthenticatedClient | Client:
+    """Get a client for API calls (authenticated when credentials are set)."""
     return get_wrapper().get_client()
+
+
+def reset_wrapper() -> None:
+    """Drop the cached wrapper so a new configuration takes effect."""
+    global _wrapper
+    _wrapper = None

@@ -68,11 +68,17 @@ class PostCertificatesBulkRenewResponse500Error:
         message = d.pop("message")
 
         _details = d.pop("details", UNSET)
-        details: list[PostCertificatesBulkRenewResponse500ErrorDetailsItem] | Unset = UNSET
+        details: list[PostCertificatesBulkRenewResponse500ErrorDetailsItem] | Unset = (
+            UNSET
+        )
         if _details is not UNSET:
             details = []
             for details_item_data in _details:
-                details_item = PostCertificatesBulkRenewResponse500ErrorDetailsItem.from_dict(details_item_data)
+                details_item = (
+                    PostCertificatesBulkRenewResponse500ErrorDetailsItem.from_dict(
+                        details_item_data
+                    )
+                )
 
                 details.append(details_item)
 

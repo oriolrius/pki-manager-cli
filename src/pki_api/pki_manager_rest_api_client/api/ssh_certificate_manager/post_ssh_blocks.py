@@ -5,22 +5,54 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.post_ssh_blocks_body import PostSshBlocksBody
+from ...models.post_ssh_blocks_response_200 import PostSshBlocksResponse200
+from ...models.post_ssh_blocks_response_400 import PostSshBlocksResponse400
+from ...models.post_ssh_blocks_response_500 import PostSshBlocksResponse500
 from ...types import Response
 
 
-def _get_kwargs() -> dict[str, Any]:
+def _get_kwargs(
+    *,
+    body: PostSshBlocksBody,
+) -> dict[str, Any]:
+    headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
         "url": "/ssh/blocks",
     }
 
+    _kwargs["json"] = body.to_dict()
+
+    headers["Content-Type"] = "application/json"
+
+    _kwargs["headers"] = headers
     return _kwargs
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | None:
+def _parse_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> (
+    PostSshBlocksResponse200
+    | PostSshBlocksResponse400
+    | PostSshBlocksResponse500
+    | None
+):
     if response.status_code == 200:
-        return None
+        response_200 = PostSshBlocksResponse200.from_dict(response.json())
+
+        return response_200
+
+    if response.status_code == 400:
+        response_400 = PostSshBlocksResponse400.from_dict(response.json())
+
+        return response_400
+
+    if response.status_code == 500:
+        response_500 = PostSshBlocksResponse500.from_dict(response.json())
+
+        return response_500
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -28,7 +60,11 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any]:
+def _build_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Response[
+    PostSshBlocksResponse200 | PostSshBlocksResponse400 | PostSshBlocksResponse500
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -40,18 +76,26 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
-) -> Response[Any]:
+    body: PostSshBlocksBody,
+) -> Response[
+    PostSshBlocksResponse200 | PostSshBlocksResponse400 | PostSshBlocksResponse500
+]:
     """Block an identity on a host (per-host KRL deny; certs stay valid elsewhere)
+
+    Args:
+        body (PostSshBlocksBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        Response[PostSshBlocksResponse200 | PostSshBlocksResponse400 | PostSshBlocksResponse500]
     """
 
-    kwargs = _get_kwargs()
+    kwargs = _get_kwargs(
+        body=body,
+    )
 
     response = client.get_httpx_client().request(
         **kwargs,
@@ -60,22 +104,90 @@ def sync_detailed(
     return _build_response(client=client, response=response)
 
 
-async def asyncio_detailed(
+def sync(
     *,
     client: AuthenticatedClient | Client,
-) -> Response[Any]:
+    body: PostSshBlocksBody,
+) -> (
+    PostSshBlocksResponse200
+    | PostSshBlocksResponse400
+    | PostSshBlocksResponse500
+    | None
+):
     """Block an identity on a host (per-host KRL deny; certs stay valid elsewhere)
+
+    Args:
+        body (PostSshBlocksBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        PostSshBlocksResponse200 | PostSshBlocksResponse400 | PostSshBlocksResponse500
     """
 
-    kwargs = _get_kwargs()
+    return sync_detailed(
+        client=client,
+        body=body,
+    ).parsed
+
+
+async def asyncio_detailed(
+    *,
+    client: AuthenticatedClient | Client,
+    body: PostSshBlocksBody,
+) -> Response[
+    PostSshBlocksResponse200 | PostSshBlocksResponse400 | PostSshBlocksResponse500
+]:
+    """Block an identity on a host (per-host KRL deny; certs stay valid elsewhere)
+
+    Args:
+        body (PostSshBlocksBody):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Response[PostSshBlocksResponse200 | PostSshBlocksResponse400 | PostSshBlocksResponse500]
+    """
+
+    kwargs = _get_kwargs(
+        body=body,
+    )
 
     response = await client.get_async_httpx_client().request(**kwargs)
 
     return _build_response(client=client, response=response)
+
+
+async def asyncio(
+    *,
+    client: AuthenticatedClient | Client,
+    body: PostSshBlocksBody,
+) -> (
+    PostSshBlocksResponse200
+    | PostSshBlocksResponse400
+    | PostSshBlocksResponse500
+    | None
+):
+    """Block an identity on a host (per-host KRL deny; certs stay valid elsewhere)
+
+    Args:
+        body (PostSshBlocksBody):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        PostSshBlocksResponse200 | PostSshBlocksResponse400 | PostSshBlocksResponse500
+    """
+
+    return (
+        await asyncio_detailed(
+            client=client,
+            body=body,
+        )
+    ).parsed

@@ -38,7 +38,9 @@ class GetCasIdCrlsResponse500:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_cas_id_crls_response_500_error import GetCasIdCrlsResponse500Error
+        from ..models.get_cas_id_crls_response_500_error import (
+            GetCasIdCrlsResponse500Error,
+        )
 
         d = dict(src_dict)
         error = GetCasIdCrlsResponse500Error.from_dict(d.pop("error"))

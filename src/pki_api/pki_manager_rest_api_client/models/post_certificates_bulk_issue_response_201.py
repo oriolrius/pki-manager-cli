@@ -71,7 +71,11 @@ class PostCertificatesBulkIssueResponse201:
         if _results is not UNSET:
             results = []
             for results_item_data in _results:
-                results_item = PostCertificatesBulkIssueResponse201ResultsItem.from_dict(results_item_data)
+                results_item = (
+                    PostCertificatesBulkIssueResponse201ResultsItem.from_dict(
+                        results_item_data
+                    )
+                )
 
                 results.append(results_item)
 

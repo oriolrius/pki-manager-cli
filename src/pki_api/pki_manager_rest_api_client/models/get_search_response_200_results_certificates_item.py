@@ -102,7 +102,9 @@ class GetSearchResponse200ResultsCertificatesItem:
         if isinstance(_metadata, Unset):
             metadata = UNSET
         else:
-            metadata = GetSearchResponse200ResultsCertificatesItemMetadata.from_dict(_metadata)
+            metadata = GetSearchResponse200ResultsCertificatesItemMetadata.from_dict(
+                _metadata
+            )
 
         get_search_response_200_results_certificates_item = cls(
             id=id,

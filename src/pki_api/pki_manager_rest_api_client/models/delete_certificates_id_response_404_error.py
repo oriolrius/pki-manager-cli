@@ -72,7 +72,11 @@ class DeleteCertificatesIdResponse404Error:
         if _details is not UNSET:
             details = []
             for details_item_data in _details:
-                details_item = DeleteCertificatesIdResponse404ErrorDetailsItem.from_dict(details_item_data)
+                details_item = (
+                    DeleteCertificatesIdResponse404ErrorDetailsItem.from_dict(
+                        details_item_data
+                    )
+                )
 
                 details.append(details_item)
 

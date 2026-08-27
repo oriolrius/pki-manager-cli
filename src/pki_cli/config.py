@@ -21,6 +21,7 @@ class Settings(BaseSettings):
         PKI_OIDC_URL: Keycloak token endpoint
         PKI_CLIENT_ID: OIDC client ID
         PKI_CLIENT_SECRET: OIDC client secret
+        PKI_TOKEN: pre-obtained bearer token (skips the OIDC exchange)
     """
 
     model_config = SettingsConfigDict(
@@ -49,6 +50,10 @@ class Settings(BaseSettings):
         default=None,
         description="OIDC client secret (required)",
     )
+    token: Optional[str] = Field(
+        default=None,
+        description="Pre-obtained bearer token; skips the OIDC client-credentials exchange",
+    )
 
     # Output Configuration
     output_format: str = Field(
@@ -62,22 +67,43 @@ class Settings(BaseSettings):
         description="Path to token cache file",
     )
 
-    def validate_config(self) -> None:
-        """Validate that required configuration is set."""
-        missing = []
-        if not self.api_url:
-            missing.append("PKI_API_URL")
-        if not self.oidc_url:
-            missing.append("PKI_OIDC_URL")
-        if not self.client_id:
-            missing.append("PKI_CLIENT_ID")
-        if not self.client_secret:
-            missing.append("PKI_CLIENT_SECRET")
+    @property
+    def has_oidc(self) -> bool:
+        """True when a full client-credentials configuration is available."""
+        return bool(self.oidc_url and self.client_id and self.client_secret)
 
-        if missing:
+    def validate_config(self) -> None:
+        """Validate that enough configuration is set to reach the API.
+
+        Only ``PKI_API_URL`` is strictly required: deployments that run with
+        OIDC disabled (``OIDC_ENABLED=false``) accept anonymous calls, and a
+        pre-obtained ``PKI_TOKEN`` is an alternative to the OIDC exchange.
+        A *partial* OIDC configuration is always an error — it would silently
+        downgrade to anonymous and fail later with an opaque 401.
+        """
+        if not self.api_url:
             raise ValueError(
-                f"Missing required configuration: {', '.join(missing)}. "
-                "Set them via environment variables, .env file, or CLI options."
+                "Missing required configuration: PKI_API_URL. "
+                "Set it via environment variable, .env file, or --api-url."
+            )
+
+        if self.token or self.has_oidc:
+            return
+
+        partial = [
+            name
+            for name, value in (
+                ("PKI_OIDC_URL", self.oidc_url),
+                ("PKI_CLIENT_ID", self.client_id),
+                ("PKI_CLIENT_SECRET", self.client_secret),
+            )
+            if not value
+        ]
+        if len(partial) != 3:  # some OIDC settings given, but not all
+            raise ValueError(
+                f"Incomplete OIDC configuration: {', '.join(partial)} not set. "
+                "Provide all three, set PKI_TOKEN, or omit them entirely to call "
+                "the API anonymously (only works when the server has OIDC disabled)."
             )
 
 
@@ -98,6 +124,7 @@ def configure(
     oidc_url: Optional[str] = None,
     client_id: Optional[str] = None,
     client_secret: Optional[str] = None,
+    token: Optional[str] = None,
 ) -> Settings:
     """Configure settings with optional overrides from CLI.
 
@@ -117,5 +144,7 @@ def configure(
         _settings.client_id = client_id
     if client_secret:
         _settings.client_secret = client_secret
+    if token:
+        _settings.token = token
 
     return _settings

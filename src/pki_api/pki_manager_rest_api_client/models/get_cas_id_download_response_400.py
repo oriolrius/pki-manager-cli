@@ -7,7 +7,9 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
-    from ..models.get_cas_id_download_response_400_error import GetCasIdDownloadResponse400Error
+    from ..models.get_cas_id_download_response_400_error import (
+        GetCasIdDownloadResponse400Error,
+    )
 
 
 T = TypeVar("T", bound="GetCasIdDownloadResponse400")
@@ -38,7 +40,9 @@ class GetCasIdDownloadResponse400:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_cas_id_download_response_400_error import GetCasIdDownloadResponse400Error
+        from ..models.get_cas_id_download_response_400_error import (
+            GetCasIdDownloadResponse400Error,
+        )
 
         d = dict(src_dict)
         error = GetCasIdDownloadResponse400Error.from_dict(d.pop("error"))

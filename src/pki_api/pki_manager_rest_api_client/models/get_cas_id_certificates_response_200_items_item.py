@@ -187,7 +187,9 @@ class GetCasIdCertificatesResponse200ItemsItem:
         if isinstance(_expiry_status, Unset):
             expiry_status = UNSET
         else:
-            expiry_status = GetCasIdCertificatesResponse200ItemsItemExpiryStatus(_expiry_status)
+            expiry_status = GetCasIdCertificatesResponse200ItemsItemExpiryStatus(
+                _expiry_status
+            )
 
         def _parse_san_dns(data: object) -> list[str] | None | Unset:
             if data is None:

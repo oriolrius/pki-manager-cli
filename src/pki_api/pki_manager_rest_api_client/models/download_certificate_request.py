@@ -5,7 +5,9 @@ from typing import Any, TypeVar
 
 from attrs import define as _attrs_define
 
-from ..models.download_certificate_request_format import DownloadCertificateRequestFormat
+from ..models.download_certificate_request_format import (
+    DownloadCertificateRequestFormat,
+)
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="DownloadCertificateRequest")
@@ -23,7 +25,9 @@ class DownloadCertificateRequest:
     """
 
     id: str
-    format_: DownloadCertificateRequestFormat | Unset = DownloadCertificateRequestFormat.PEM
+    format_: DownloadCertificateRequestFormat | Unset = (
+        DownloadCertificateRequestFormat.PEM
+    )
     password: str | Unset = UNSET
     encrypt_private_key: bool | Unset = True
     alias: str | Unset = UNSET

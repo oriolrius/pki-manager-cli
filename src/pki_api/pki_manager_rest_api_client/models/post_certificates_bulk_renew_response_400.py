@@ -7,7 +7,9 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
-    from ..models.post_certificates_bulk_renew_response_400_error import PostCertificatesBulkRenewResponse400Error
+    from ..models.post_certificates_bulk_renew_response_400_error import (
+        PostCertificatesBulkRenewResponse400Error,
+    )
 
 
 T = TypeVar("T", bound="PostCertificatesBulkRenewResponse400")
@@ -38,7 +40,9 @@ class PostCertificatesBulkRenewResponse400:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.post_certificates_bulk_renew_response_400_error import PostCertificatesBulkRenewResponse400Error
+        from ..models.post_certificates_bulk_renew_response_400_error import (
+            PostCertificatesBulkRenewResponse400Error,
+        )
 
         d = dict(src_dict)
         error = PostCertificatesBulkRenewResponse400Error.from_dict(d.pop("error"))

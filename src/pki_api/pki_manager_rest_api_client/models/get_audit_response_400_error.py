@@ -9,7 +9,9 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.get_audit_response_400_error_details_item import GetAuditResponse400ErrorDetailsItem
+    from ..models.get_audit_response_400_error_details_item import (
+        GetAuditResponse400ErrorDetailsItem,
+    )
 
 
 T = TypeVar("T", bound="GetAuditResponse400Error")
@@ -56,7 +58,9 @@ class GetAuditResponse400Error:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_audit_response_400_error_details_item import GetAuditResponse400ErrorDetailsItem
+        from ..models.get_audit_response_400_error_details_item import (
+            GetAuditResponse400ErrorDetailsItem,
+        )
 
         d = dict(src_dict)
         code = d.pop("code")
@@ -68,7 +72,9 @@ class GetAuditResponse400Error:
         if _details is not UNSET:
             details = []
             for details_item_data in _details:
-                details_item = GetAuditResponse400ErrorDetailsItem.from_dict(details_item_data)
+                details_item = GetAuditResponse400ErrorDetailsItem.from_dict(
+                    details_item_data
+                )
 
                 details.append(details_item)
 

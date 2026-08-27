@@ -9,8 +9,12 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.get_certificates_response_200_items_item import GetCertificatesResponse200ItemsItem
-    from ..models.get_certificates_response_200_pagination import GetCertificatesResponse200Pagination
+    from ..models.get_certificates_response_200_items_item import (
+        GetCertificatesResponse200ItemsItem,
+    )
+    from ..models.get_certificates_response_200_pagination import (
+        GetCertificatesResponse200Pagination,
+    )
 
 
 T = TypeVar("T", bound="GetCertificatesResponse200")
@@ -52,8 +56,12 @@ class GetCertificatesResponse200:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_certificates_response_200_items_item import GetCertificatesResponse200ItemsItem
-        from ..models.get_certificates_response_200_pagination import GetCertificatesResponse200Pagination
+        from ..models.get_certificates_response_200_items_item import (
+            GetCertificatesResponse200ItemsItem,
+        )
+        from ..models.get_certificates_response_200_pagination import (
+            GetCertificatesResponse200Pagination,
+        )
 
         d = dict(src_dict)
         _items = d.pop("items", UNSET)
@@ -61,7 +69,9 @@ class GetCertificatesResponse200:
         if _items is not UNSET:
             items = []
             for items_item_data in _items:
-                items_item = GetCertificatesResponse200ItemsItem.from_dict(items_item_data)
+                items_item = GetCertificatesResponse200ItemsItem.from_dict(
+                    items_item_data
+                )
 
                 items.append(items_item)
 

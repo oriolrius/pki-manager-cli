@@ -75,7 +75,10 @@ def _parse_response(
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
 ) -> Response[
-    PostCasIdRevokeResponse200 | PostCasIdRevokeResponse404 | PostCasIdRevokeResponse409 | PostCasIdRevokeResponse500
+    PostCasIdRevokeResponse200
+    | PostCasIdRevokeResponse404
+    | PostCasIdRevokeResponse409
+    | PostCasIdRevokeResponse500
 ]:
     return Response(
         status_code=HTTPStatus(response.status_code),
@@ -91,7 +94,10 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     body: PostCasIdRevokeBody,
 ) -> Response[
-    PostCasIdRevokeResponse200 | PostCasIdRevokeResponse404 | PostCasIdRevokeResponse409 | PostCasIdRevokeResponse500
+    PostCasIdRevokeResponse200
+    | PostCasIdRevokeResponse404
+    | PostCasIdRevokeResponse409
+    | PostCasIdRevokeResponse500
 ]:
     """Revoke a Certificate Authority. This will also revoke all certificates issued by this CA.
 
@@ -158,7 +164,10 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     body: PostCasIdRevokeBody,
 ) -> Response[
-    PostCasIdRevokeResponse200 | PostCasIdRevokeResponse404 | PostCasIdRevokeResponse409 | PostCasIdRevokeResponse500
+    PostCasIdRevokeResponse200
+    | PostCasIdRevokeResponse404
+    | PostCasIdRevokeResponse409
+    | PostCasIdRevokeResponse500
 ]:
     """Revoke a Certificate Authority. This will also revoke all certificates issued by this CA.
 

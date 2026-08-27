@@ -9,7 +9,9 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.delete_cas_id_response_409_error_details_item import DeleteCasIdResponse409ErrorDetailsItem
+    from ..models.delete_cas_id_response_409_error_details_item import (
+        DeleteCasIdResponse409ErrorDetailsItem,
+    )
 
 
 T = TypeVar("T", bound="DeleteCasIdResponse409Error")
@@ -56,7 +58,9 @@ class DeleteCasIdResponse409Error:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.delete_cas_id_response_409_error_details_item import DeleteCasIdResponse409ErrorDetailsItem
+        from ..models.delete_cas_id_response_409_error_details_item import (
+            DeleteCasIdResponse409ErrorDetailsItem,
+        )
 
         d = dict(src_dict)
         code = d.pop("code")
@@ -68,7 +72,9 @@ class DeleteCasIdResponse409Error:
         if _details is not UNSET:
             details = []
             for details_item_data in _details:
-                details_item = DeleteCasIdResponse409ErrorDetailsItem.from_dict(details_item_data)
+                details_item = DeleteCasIdResponse409ErrorDetailsItem.from_dict(
+                    details_item_data
+                )
 
                 details.append(details_item)
 

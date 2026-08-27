@@ -9,22 +9,36 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
-from ..models.get_certificates_id_response_200_status import GetCertificatesIdResponse200Status
-from ..models.get_certificates_id_response_200_validity_status import GetCertificatesIdResponse200ValidityStatus
+from ..models.get_certificates_id_response_200_status import (
+    GetCertificatesIdResponse200Status,
+)
+from ..models.get_certificates_id_response_200_validity_status import (
+    GetCertificatesIdResponse200ValidityStatus,
+)
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.get_certificates_id_response_200_basic_constraints_type_0 import (
         GetCertificatesIdResponse200BasicConstraintsType0,
     )
-    from ..models.get_certificates_id_response_200_fingerprints import GetCertificatesIdResponse200Fingerprints
-    from ..models.get_certificates_id_response_200_issuer import GetCertificatesIdResponse200Issuer
-    from ..models.get_certificates_id_response_200_issuing_ca import GetCertificatesIdResponse200IssuingCA
-    from ..models.get_certificates_id_response_200_key_usage_type_0 import GetCertificatesIdResponse200KeyUsageType0
+    from ..models.get_certificates_id_response_200_fingerprints import (
+        GetCertificatesIdResponse200Fingerprints,
+    )
+    from ..models.get_certificates_id_response_200_issuer import (
+        GetCertificatesIdResponse200Issuer,
+    )
+    from ..models.get_certificates_id_response_200_issuing_ca import (
+        GetCertificatesIdResponse200IssuingCA,
+    )
+    from ..models.get_certificates_id_response_200_key_usage_type_0 import (
+        GetCertificatesIdResponse200KeyUsageType0,
+    )
     from ..models.get_certificates_id_response_200_renewed_to_type_0_item import (
         GetCertificatesIdResponse200RenewedToType0Item,
     )
-    from ..models.get_certificates_id_response_200_subject import GetCertificatesIdResponse200Subject
+    from ..models.get_certificates_id_response_200_subject import (
+        GetCertificatesIdResponse200Subject,
+    )
 
 
 T = TypeVar("T", bound="GetCertificatesIdResponse200")
@@ -83,7 +97,9 @@ class GetCertificatesIdResponse200:
     san_dns: list[str] | None | Unset = UNSET
     san_ip: list[str] | None | Unset = UNSET
     san_email: list[str] | None | Unset = UNSET
-    basic_constraints: GetCertificatesIdResponse200BasicConstraintsType0 | None | Unset = UNSET
+    basic_constraints: (
+        GetCertificatesIdResponse200BasicConstraintsType0 | None | Unset
+    ) = UNSET
     fingerprints: GetCertificatesIdResponse200Fingerprints | Unset = UNSET
     issuing_ca: GetCertificatesIdResponse200IssuingCA | Unset = UNSET
     certificate_pem: str | Unset = UNSET
@@ -91,7 +107,9 @@ class GetCertificatesIdResponse200:
     revocation_date: datetime.datetime | None | Unset = UNSET
     revocation_reason: None | str | Unset = UNSET
     renewed_from_id: None | Unset | UUID = UNSET
-    renewed_to: list[GetCertificatesIdResponse200RenewedToType0Item] | None | Unset = UNSET
+    renewed_to: list[GetCertificatesIdResponse200RenewedToType0Item] | None | Unset = (
+        UNSET
+    )
     created_at: datetime.datetime | Unset = UNSET
     updated_at: datetime.datetime | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -100,7 +118,9 @@ class GetCertificatesIdResponse200:
         from ..models.get_certificates_id_response_200_basic_constraints_type_0 import (
             GetCertificatesIdResponse200BasicConstraintsType0,
         )
-        from ..models.get_certificates_id_response_200_key_usage_type_0 import GetCertificatesIdResponse200KeyUsageType0
+        from ..models.get_certificates_id_response_200_key_usage_type_0 import (
+            GetCertificatesIdResponse200KeyUsageType0,
+        )
 
         id: str | Unset = UNSET
         if not isinstance(self.id, Unset):
@@ -195,7 +215,9 @@ class GetCertificatesIdResponse200:
         basic_constraints: dict[str, Any] | None | Unset
         if isinstance(self.basic_constraints, Unset):
             basic_constraints = UNSET
-        elif isinstance(self.basic_constraints, GetCertificatesIdResponse200BasicConstraintsType0):
+        elif isinstance(
+            self.basic_constraints, GetCertificatesIdResponse200BasicConstraintsType0
+        ):
             basic_constraints = self.basic_constraints.to_dict()
         else:
             basic_constraints = self.basic_constraints
@@ -327,14 +349,24 @@ class GetCertificatesIdResponse200:
         from ..models.get_certificates_id_response_200_basic_constraints_type_0 import (
             GetCertificatesIdResponse200BasicConstraintsType0,
         )
-        from ..models.get_certificates_id_response_200_fingerprints import GetCertificatesIdResponse200Fingerprints
-        from ..models.get_certificates_id_response_200_issuer import GetCertificatesIdResponse200Issuer
-        from ..models.get_certificates_id_response_200_issuing_ca import GetCertificatesIdResponse200IssuingCA
-        from ..models.get_certificates_id_response_200_key_usage_type_0 import GetCertificatesIdResponse200KeyUsageType0
+        from ..models.get_certificates_id_response_200_fingerprints import (
+            GetCertificatesIdResponse200Fingerprints,
+        )
+        from ..models.get_certificates_id_response_200_issuer import (
+            GetCertificatesIdResponse200Issuer,
+        )
+        from ..models.get_certificates_id_response_200_issuing_ca import (
+            GetCertificatesIdResponse200IssuingCA,
+        )
+        from ..models.get_certificates_id_response_200_key_usage_type_0 import (
+            GetCertificatesIdResponse200KeyUsageType0,
+        )
         from ..models.get_certificates_id_response_200_renewed_to_type_0_item import (
             GetCertificatesIdResponse200RenewedToType0Item,
         )
-        from ..models.get_certificates_id_response_200_subject import GetCertificatesIdResponse200Subject
+        from ..models.get_certificates_id_response_200_subject import (
+            GetCertificatesIdResponse200Subject,
+        )
 
         d = dict(src_dict)
         _id = d.pop("id", UNSET)
@@ -399,7 +431,9 @@ class GetCertificatesIdResponse200:
         if isinstance(_validity_status, Unset):
             validity_status = UNSET
         else:
-            validity_status = GetCertificatesIdResponse200ValidityStatus(_validity_status)
+            validity_status = GetCertificatesIdResponse200ValidityStatus(
+                _validity_status
+            )
 
         def _parse_remaining_days(data: object) -> int | None | Unset:
             if data is None:
@@ -410,7 +444,9 @@ class GetCertificatesIdResponse200:
 
         remaining_days = _parse_remaining_days(d.pop("remainingDays", UNSET))
 
-        def _parse_key_usage(data: object) -> GetCertificatesIdResponse200KeyUsageType0 | None | Unset:
+        def _parse_key_usage(
+            data: object,
+        ) -> GetCertificatesIdResponse200KeyUsageType0 | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -418,7 +454,9 @@ class GetCertificatesIdResponse200:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                key_usage_type_0 = GetCertificatesIdResponse200KeyUsageType0.from_dict(data)
+                key_usage_type_0 = GetCertificatesIdResponse200KeyUsageType0.from_dict(
+                    data
+                )
 
                 return key_usage_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -495,7 +533,9 @@ class GetCertificatesIdResponse200:
 
         san_email = _parse_san_email(d.pop("sanEmail", UNSET))
 
-        def _parse_basic_constraints(data: object) -> GetCertificatesIdResponse200BasicConstraintsType0 | None | Unset:
+        def _parse_basic_constraints(
+            data: object,
+        ) -> GetCertificatesIdResponse200BasicConstraintsType0 | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -503,12 +543,16 @@ class GetCertificatesIdResponse200:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                basic_constraints_type_0 = GetCertificatesIdResponse200BasicConstraintsType0.from_dict(data)
+                basic_constraints_type_0 = (
+                    GetCertificatesIdResponse200BasicConstraintsType0.from_dict(data)
+                )
 
                 return basic_constraints_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(GetCertificatesIdResponse200BasicConstraintsType0 | None | Unset, data)
+            return cast(
+                GetCertificatesIdResponse200BasicConstraintsType0 | None | Unset, data
+            )
 
         basic_constraints = _parse_basic_constraints(d.pop("basicConstraints", UNSET))
 
@@ -517,7 +561,9 @@ class GetCertificatesIdResponse200:
         if isinstance(_fingerprints, Unset):
             fingerprints = UNSET
         else:
-            fingerprints = GetCertificatesIdResponse200Fingerprints.from_dict(_fingerprints)
+            fingerprints = GetCertificatesIdResponse200Fingerprints.from_dict(
+                _fingerprints
+            )
 
         _issuing_ca = d.pop("issuingCA", UNSET)
         issuing_ca: GetCertificatesIdResponse200IssuingCA | Unset
@@ -580,7 +626,9 @@ class GetCertificatesIdResponse200:
 
         renewed_from_id = _parse_renewed_from_id(d.pop("renewedFromId", UNSET))
 
-        def _parse_renewed_to(data: object) -> list[GetCertificatesIdResponse200RenewedToType0Item] | None | Unset:
+        def _parse_renewed_to(
+            data: object,
+        ) -> list[GetCertificatesIdResponse200RenewedToType0Item] | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -591,8 +639,10 @@ class GetCertificatesIdResponse200:
                 renewed_to_type_0 = []
                 _renewed_to_type_0 = data
                 for renewed_to_type_0_item_data in _renewed_to_type_0:
-                    renewed_to_type_0_item = GetCertificatesIdResponse200RenewedToType0Item.from_dict(
-                        renewed_to_type_0_item_data
+                    renewed_to_type_0_item = (
+                        GetCertificatesIdResponse200RenewedToType0Item.from_dict(
+                            renewed_to_type_0_item_data
+                        )
                     )
 
                     renewed_to_type_0.append(renewed_to_type_0_item)
@@ -600,7 +650,10 @@ class GetCertificatesIdResponse200:
                 return renewed_to_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(list[GetCertificatesIdResponse200RenewedToType0Item] | None | Unset, data)
+            return cast(
+                list[GetCertificatesIdResponse200RenewedToType0Item] | None | Unset,
+                data,
+            )
 
         renewed_to = _parse_renewed_to(d.pop("renewedTo", UNSET))
 

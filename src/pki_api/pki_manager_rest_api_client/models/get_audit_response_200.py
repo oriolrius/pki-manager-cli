@@ -58,8 +58,12 @@ class GetAuditResponse200:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_audit_response_200_items_item import GetAuditResponse200ItemsItem
-        from ..models.get_audit_response_200_pagination import GetAuditResponse200Pagination
+        from ..models.get_audit_response_200_items_item import (
+            GetAuditResponse200ItemsItem,
+        )
+        from ..models.get_audit_response_200_pagination import (
+            GetAuditResponse200Pagination,
+        )
 
         d = dict(src_dict)
         _items = d.pop("items", UNSET)

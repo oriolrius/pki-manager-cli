@@ -6,9 +6,15 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.delete_certificates_bulk_body import DeleteCertificatesBulkBody
-from ...models.delete_certificates_bulk_response_200 import DeleteCertificatesBulkResponse200
-from ...models.delete_certificates_bulk_response_400 import DeleteCertificatesBulkResponse400
-from ...models.delete_certificates_bulk_response_500 import DeleteCertificatesBulkResponse500
+from ...models.delete_certificates_bulk_response_200 import (
+    DeleteCertificatesBulkResponse200,
+)
+from ...models.delete_certificates_bulk_response_400 import (
+    DeleteCertificatesBulkResponse400,
+)
+from ...models.delete_certificates_bulk_response_500 import (
+    DeleteCertificatesBulkResponse500,
+)
 from ...types import Response
 
 
@@ -33,7 +39,12 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> DeleteCertificatesBulkResponse200 | DeleteCertificatesBulkResponse400 | DeleteCertificatesBulkResponse500 | None:
+) -> (
+    DeleteCertificatesBulkResponse200
+    | DeleteCertificatesBulkResponse400
+    | DeleteCertificatesBulkResponse500
+    | None
+):
     if response.status_code == 200:
         response_200 = DeleteCertificatesBulkResponse200.from_dict(response.json())
 
@@ -58,7 +69,9 @@ def _parse_response(
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
 ) -> Response[
-    DeleteCertificatesBulkResponse200 | DeleteCertificatesBulkResponse400 | DeleteCertificatesBulkResponse500
+    DeleteCertificatesBulkResponse200
+    | DeleteCertificatesBulkResponse400
+    | DeleteCertificatesBulkResponse500
 ]:
     return Response(
         status_code=HTTPStatus(response.status_code),
@@ -73,7 +86,9 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     body: DeleteCertificatesBulkBody,
 ) -> Response[
-    DeleteCertificatesBulkResponse200 | DeleteCertificatesBulkResponse400 | DeleteCertificatesBulkResponse500
+    DeleteCertificatesBulkResponse200
+    | DeleteCertificatesBulkResponse400
+    | DeleteCertificatesBulkResponse500
 ]:
     """Bulk delete certificates (must be revoked or expired > 90 days)
 
@@ -103,7 +118,12 @@ def sync(
     *,
     client: AuthenticatedClient | Client,
     body: DeleteCertificatesBulkBody,
-) -> DeleteCertificatesBulkResponse200 | DeleteCertificatesBulkResponse400 | DeleteCertificatesBulkResponse500 | None:
+) -> (
+    DeleteCertificatesBulkResponse200
+    | DeleteCertificatesBulkResponse400
+    | DeleteCertificatesBulkResponse500
+    | None
+):
     """Bulk delete certificates (must be revoked or expired > 90 days)
 
     Args:
@@ -128,7 +148,9 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     body: DeleteCertificatesBulkBody,
 ) -> Response[
-    DeleteCertificatesBulkResponse200 | DeleteCertificatesBulkResponse400 | DeleteCertificatesBulkResponse500
+    DeleteCertificatesBulkResponse200
+    | DeleteCertificatesBulkResponse400
+    | DeleteCertificatesBulkResponse500
 ]:
     """Bulk delete certificates (must be revoked or expired > 90 days)
 
@@ -156,7 +178,12 @@ async def asyncio(
     *,
     client: AuthenticatedClient | Client,
     body: DeleteCertificatesBulkBody,
-) -> DeleteCertificatesBulkResponse200 | DeleteCertificatesBulkResponse400 | DeleteCertificatesBulkResponse500 | None:
+) -> (
+    DeleteCertificatesBulkResponse200
+    | DeleteCertificatesBulkResponse400
+    | DeleteCertificatesBulkResponse500
+    | None
+):
     """Bulk delete certificates (must be revoked or expired > 90 days)
 
     Args:

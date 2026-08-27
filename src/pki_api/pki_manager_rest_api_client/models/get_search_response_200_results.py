@@ -9,9 +9,15 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.get_search_response_200_results_cas_item import GetSearchResponse200ResultsCasItem
-    from ..models.get_search_response_200_results_certificates_item import GetSearchResponse200ResultsCertificatesItem
-    from ..models.get_search_response_200_results_domains_item import GetSearchResponse200ResultsDomainsItem
+    from ..models.get_search_response_200_results_cas_item import (
+        GetSearchResponse200ResultsCasItem,
+    )
+    from ..models.get_search_response_200_results_certificates_item import (
+        GetSearchResponse200ResultsCertificatesItem,
+    )
+    from ..models.get_search_response_200_results_domains_item import (
+        GetSearchResponse200ResultsDomainsItem,
+    )
 
 
 T = TypeVar("T", bound="GetSearchResponse200Results")
@@ -67,11 +73,15 @@ class GetSearchResponse200Results:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_search_response_200_results_cas_item import GetSearchResponse200ResultsCasItem
+        from ..models.get_search_response_200_results_cas_item import (
+            GetSearchResponse200ResultsCasItem,
+        )
         from ..models.get_search_response_200_results_certificates_item import (
             GetSearchResponse200ResultsCertificatesItem,
         )
-        from ..models.get_search_response_200_results_domains_item import GetSearchResponse200ResultsDomainsItem
+        from ..models.get_search_response_200_results_domains_item import (
+            GetSearchResponse200ResultsDomainsItem,
+        )
 
         d = dict(src_dict)
         _cas = d.pop("cas", UNSET)
@@ -88,7 +98,11 @@ class GetSearchResponse200Results:
         if _certificates is not UNSET:
             certificates = []
             for certificates_item_data in _certificates:
-                certificates_item = GetSearchResponse200ResultsCertificatesItem.from_dict(certificates_item_data)
+                certificates_item = (
+                    GetSearchResponse200ResultsCertificatesItem.from_dict(
+                        certificates_item_data
+                    )
+                )
 
                 certificates.append(certificates_item)
 
@@ -97,7 +111,9 @@ class GetSearchResponse200Results:
         if _domains is not UNSET:
             domains = []
             for domains_item_data in _domains:
-                domains_item = GetSearchResponse200ResultsDomainsItem.from_dict(domains_item_data)
+                domains_item = GetSearchResponse200ResultsDomainsItem.from_dict(
+                    domains_item_data
+                )
 
                 domains.append(domains_item)
 

@@ -7,7 +7,9 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
-    from ..models.post_certificates_bulk_download_response_400_error import PostCertificatesBulkDownloadResponse400Error
+    from ..models.post_certificates_bulk_download_response_400_error import (
+        PostCertificatesBulkDownloadResponse400Error,
+    )
 
 
 T = TypeVar("T", bound="PostCertificatesBulkDownloadResponse400")

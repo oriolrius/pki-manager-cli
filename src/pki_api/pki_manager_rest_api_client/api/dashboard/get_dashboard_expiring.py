@@ -5,9 +5,15 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.get_dashboard_expiring_response_200_item import GetDashboardExpiringResponse200Item
-from ...models.get_dashboard_expiring_response_400 import GetDashboardExpiringResponse400
-from ...models.get_dashboard_expiring_response_500 import GetDashboardExpiringResponse500
+from ...models.get_dashboard_expiring_response_200_item import (
+    GetDashboardExpiringResponse200Item,
+)
+from ...models.get_dashboard_expiring_response_400 import (
+    GetDashboardExpiringResponse400,
+)
+from ...models.get_dashboard_expiring_response_500 import (
+    GetDashboardExpiringResponse500,
+)
 from ...types import UNSET, Response, Unset
 
 
@@ -34,13 +40,18 @@ def _get_kwargs(
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
 ) -> (
-    GetDashboardExpiringResponse400 | GetDashboardExpiringResponse500 | list[GetDashboardExpiringResponse200Item] | None
+    GetDashboardExpiringResponse400
+    | GetDashboardExpiringResponse500
+    | list[GetDashboardExpiringResponse200Item]
+    | None
 ):
     if response.status_code == 200:
         response_200 = []
         _response_200 = response.json()
         for response_200_item_data in _response_200:
-            response_200_item = GetDashboardExpiringResponse200Item.from_dict(response_200_item_data)
+            response_200_item = GetDashboardExpiringResponse200Item.from_dict(
+                response_200_item_data
+            )
 
             response_200.append(response_200_item)
 
@@ -65,7 +76,9 @@ def _parse_response(
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
 ) -> Response[
-    GetDashboardExpiringResponse400 | GetDashboardExpiringResponse500 | list[GetDashboardExpiringResponse200Item]
+    GetDashboardExpiringResponse400
+    | GetDashboardExpiringResponse500
+    | list[GetDashboardExpiringResponse200Item]
 ]:
     return Response(
         status_code=HTTPStatus(response.status_code),
@@ -80,7 +93,9 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     limit: int | Unset = 5,
 ) -> Response[
-    GetDashboardExpiringResponse400 | GetDashboardExpiringResponse500 | list[GetDashboardExpiringResponse200Item]
+    GetDashboardExpiringResponse400
+    | GetDashboardExpiringResponse500
+    | list[GetDashboardExpiringResponse200Item]
 ]:
     """Get items (CAs and certificates) expiring soonest
 
@@ -111,7 +126,10 @@ def sync(
     client: AuthenticatedClient | Client,
     limit: int | Unset = 5,
 ) -> (
-    GetDashboardExpiringResponse400 | GetDashboardExpiringResponse500 | list[GetDashboardExpiringResponse200Item] | None
+    GetDashboardExpiringResponse400
+    | GetDashboardExpiringResponse500
+    | list[GetDashboardExpiringResponse200Item]
+    | None
 ):
     """Get items (CAs and certificates) expiring soonest
 
@@ -137,7 +155,9 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     limit: int | Unset = 5,
 ) -> Response[
-    GetDashboardExpiringResponse400 | GetDashboardExpiringResponse500 | list[GetDashboardExpiringResponse200Item]
+    GetDashboardExpiringResponse400
+    | GetDashboardExpiringResponse500
+    | list[GetDashboardExpiringResponse200Item]
 ]:
     """Get items (CAs and certificates) expiring soonest
 
@@ -166,7 +186,10 @@ async def asyncio(
     client: AuthenticatedClient | Client,
     limit: int | Unset = 5,
 ) -> (
-    GetDashboardExpiringResponse400 | GetDashboardExpiringResponse500 | list[GetDashboardExpiringResponse200Item] | None
+    GetDashboardExpiringResponse400
+    | GetDashboardExpiringResponse500
+    | list[GetDashboardExpiringResponse200Item]
+    | None
 ):
     """Get items (CAs and certificates) expiring soonest
 

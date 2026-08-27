@@ -6,7 +6,9 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.post_certificates_id_revoke_body_reason import PostCertificatesIdRevokeBodyReason
+from ..models.post_certificates_id_revoke_body_reason import (
+    PostCertificatesIdRevokeBodyReason,
+)
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="PostCertificatesIdRevokeBody")

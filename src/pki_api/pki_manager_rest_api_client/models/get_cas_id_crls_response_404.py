@@ -38,7 +38,9 @@ class GetCasIdCrlsResponse404:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_cas_id_crls_response_404_error import GetCasIdCrlsResponse404Error
+        from ..models.get_cas_id_crls_response_404_error import (
+            GetCasIdCrlsResponse404Error,
+        )
 
         d = dict(src_dict)
         error = GetCasIdCrlsResponse404Error.from_dict(d.pop("error"))

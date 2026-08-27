@@ -38,7 +38,9 @@ class DeleteCasIdResponse500:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.delete_cas_id_response_500_error import DeleteCasIdResponse500Error
+        from ..models.delete_cas_id_response_500_error import (
+            DeleteCasIdResponse500Error,
+        )
 
         d = dict(src_dict)
         error = DeleteCasIdResponse500Error.from_dict(d.pop("error"))

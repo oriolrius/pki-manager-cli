@@ -143,6 +143,24 @@ def public(
     return _handle(resp, expect_bytes=expect_bytes)
 
 
+def unwrap(result: Any, *, what: str) -> Any:
+    """Return a generated-client result, or raise on the API's error shape.
+
+    ``sync()`` on the generated client returns the *parsed union* of every
+    documented response, so a 4xx/5xx comes back as a model carrying an
+    ``error`` object rather than raising. Collapse that into an
+    :class:`ApiError` so every command reports failures the same way.
+    """
+    if result is None:
+        raise ApiError(0, f"{what} failed (no response body)")
+    error = getattr(result, "error", None)
+    if error is not None:
+        code = getattr(error, "code", "ERROR")
+        message = getattr(error, "message", str(error))
+        raise ApiError(0, f"{code}: {message}")
+    return result
+
+
 def read_value_or_file(value: Optional[str]) -> Optional[str]:
     """Return ``value`` verbatim, or the contents of ``path`` for ``@path``.
 

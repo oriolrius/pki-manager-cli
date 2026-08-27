@@ -12,13 +12,13 @@ from ...models.post_cas_id_crls_response_201 import PostCasIdCrlsResponse201
 from ...models.post_cas_id_crls_response_404 import PostCasIdCrlsResponse404
 from ...models.post_cas_id_crls_response_409 import PostCasIdCrlsResponse409
 from ...models.post_cas_id_crls_response_500 import PostCasIdCrlsResponse500
-from ...types import UNSET, Response, Unset
+from ...types import Response
 
 
 def _get_kwargs(
     id: UUID,
     *,
-    body: PostCasIdCrlsBody | Unset = UNSET,
+    body: PostCasIdCrlsBody,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
@@ -29,8 +29,7 @@ def _get_kwargs(
         ),
     }
 
-    if not isinstance(body, Unset):
-        _kwargs["json"] = body.to_dict()
+    _kwargs["json"] = body.to_dict()
 
     headers["Content-Type"] = "application/json"
 
@@ -40,7 +39,13 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> PostCasIdCrlsResponse201 | PostCasIdCrlsResponse404 | PostCasIdCrlsResponse409 | PostCasIdCrlsResponse500 | None:
+) -> (
+    PostCasIdCrlsResponse201
+    | PostCasIdCrlsResponse404
+    | PostCasIdCrlsResponse409
+    | PostCasIdCrlsResponse500
+    | None
+):
     if response.status_code == 201:
         response_201 = PostCasIdCrlsResponse201.from_dict(response.json())
 
@@ -70,7 +75,10 @@ def _parse_response(
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
 ) -> Response[
-    PostCasIdCrlsResponse201 | PostCasIdCrlsResponse404 | PostCasIdCrlsResponse409 | PostCasIdCrlsResponse500
+    PostCasIdCrlsResponse201
+    | PostCasIdCrlsResponse404
+    | PostCasIdCrlsResponse409
+    | PostCasIdCrlsResponse500
 ]:
     return Response(
         status_code=HTTPStatus(response.status_code),
@@ -84,15 +92,18 @@ def sync_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: PostCasIdCrlsBody | Unset = UNSET,
+    body: PostCasIdCrlsBody,
 ) -> Response[
-    PostCasIdCrlsResponse201 | PostCasIdCrlsResponse404 | PostCasIdCrlsResponse409 | PostCasIdCrlsResponse500
+    PostCasIdCrlsResponse201
+    | PostCasIdCrlsResponse404
+    | PostCasIdCrlsResponse409
+    | PostCasIdCrlsResponse500
 ]:
     """Generate a new Certificate Revocation List (CRL) for a specific CA
 
     Args:
         id (UUID):
-        body (PostCasIdCrlsBody | Unset):
+        body (PostCasIdCrlsBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -118,13 +129,19 @@ def sync(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: PostCasIdCrlsBody | Unset = UNSET,
-) -> PostCasIdCrlsResponse201 | PostCasIdCrlsResponse404 | PostCasIdCrlsResponse409 | PostCasIdCrlsResponse500 | None:
+    body: PostCasIdCrlsBody,
+) -> (
+    PostCasIdCrlsResponse201
+    | PostCasIdCrlsResponse404
+    | PostCasIdCrlsResponse409
+    | PostCasIdCrlsResponse500
+    | None
+):
     """Generate a new Certificate Revocation List (CRL) for a specific CA
 
     Args:
         id (UUID):
-        body (PostCasIdCrlsBody | Unset):
+        body (PostCasIdCrlsBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -145,15 +162,18 @@ async def asyncio_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: PostCasIdCrlsBody | Unset = UNSET,
+    body: PostCasIdCrlsBody,
 ) -> Response[
-    PostCasIdCrlsResponse201 | PostCasIdCrlsResponse404 | PostCasIdCrlsResponse409 | PostCasIdCrlsResponse500
+    PostCasIdCrlsResponse201
+    | PostCasIdCrlsResponse404
+    | PostCasIdCrlsResponse409
+    | PostCasIdCrlsResponse500
 ]:
     """Generate a new Certificate Revocation List (CRL) for a specific CA
 
     Args:
         id (UUID):
-        body (PostCasIdCrlsBody | Unset):
+        body (PostCasIdCrlsBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -177,13 +197,19 @@ async def asyncio(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: PostCasIdCrlsBody | Unset = UNSET,
-) -> PostCasIdCrlsResponse201 | PostCasIdCrlsResponse404 | PostCasIdCrlsResponse409 | PostCasIdCrlsResponse500 | None:
+    body: PostCasIdCrlsBody,
+) -> (
+    PostCasIdCrlsResponse201
+    | PostCasIdCrlsResponse404
+    | PostCasIdCrlsResponse409
+    | PostCasIdCrlsResponse500
+    | None
+):
     """Generate a new Certificate Revocation List (CRL) for a specific CA
 
     Args:
         id (UUID):
-        body (PostCasIdCrlsBody | Unset):
+        body (PostCasIdCrlsBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
