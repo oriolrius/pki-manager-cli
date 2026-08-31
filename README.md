@@ -10,7 +10,11 @@ the server root. See [Command ↔ endpoint map](#command--endpoint-map).
 
 | pki-cli | PKI Manager | REST API |
 |---------|-------------|----------|
-| 0.3.0   | 3.9.5       | v1.0.0   |
+| 0.4.0   | 3.9.5       | v1.0.0   |
+
+> 0.4.0 adds the 22 SSH lifecycle endpoints from the server's SSH REST/tRPC parity
+> work (TASK-216), which landed after the 3.9.5 tag. On an older server those
+> commands return 404; everything else works unchanged.
 
 ## Installation
 
@@ -193,32 +197,56 @@ access blocks. These use the same OIDC credentials as the X.509 commands.
 # CAs
 pki ssh ca list                                     # List user + host CAs
 pki ssh ca create --type user --label "acme-users"  # Create a CA
+pki ssh ca get <CA_ID>                              # Inspect one CA
+pki ssh ca import --type host --kms-key-id <K> --kms-public-key-id <P>
 pki ssh ca pub <CA_ID>                              # Print the CA's OpenSSH public key
+pki ssh ca rotate <CA_ID>                           # New keypair, predecessor kept for trust
+pki ssh ca retire <CA_ID>                           # Stop issuance, keep existing certs trusted
+pki ssh ca revoke <CA_ID> --reason "compromise"     # Revoke the CA itself
 pki ssh ca krl-generate <CA_ID>                     # Rebuild the CA's KRL
 pki ssh ca revocations <CA_ID>                      # List revocations
+pki ssh ca revoke-serial <CA_ID> --serial 42        # Revoke a serial with no cert row
+pki ssh ca revoke-key <CA_ID> --fingerprint SHA256:...  # Deny a key this PKI never issued
 
 # Hosts
 pki ssh host register --fqdn web1.acme.internal --pubkey @/etc/ssh/ssh_host_ecdsa_key.pub
 pki ssh host issue --host-id <HOST_ID> --ttl 2592000
 pki ssh host list --fqdn web1.acme.internal
+pki ssh host get <HOST_ID>                          # Inspect one host
 pki ssh host access <HOST_ID>                       # Who can reach this host
+pki ssh host deploy-bundle <HOST_ID>                # sshd drop-in + CA keys + on-host paths
+pki ssh host ecies-key <HOST_ID>                    # Register its ECIES/KRL recipient key
 pki ssh host cert <HOST_ID>                         # Print the host certificate
 pki ssh host sshd-config <HOST_ID>                  # Print the sshd_config drop-in
 pki ssh host auth-principals <HOST_ID>              # Render AuthorizedPrincipalsFile contents
 pki ssh host mark-pushed <HOST_ID>                  # Clear Stale after pushing those files
 pki ssh host blocks <HOST_ID>                       # Block history (active + lifted)
+pki ssh host revoke <HOST_ID> --reason "rebuilt"    # Revoke its current certificate
+pki ssh host offboard <HOST_ID>                     # Terminal: retires its per-host KRL lineage
 
 # Identities & user certificates
+pki ssh identity list                               # List identities (subject is UNIQUE)
 pki ssh identity create --subject alice
 pki ssh identity blocks <ID>                        # Active blocks + distribution state
 pki ssh identity collisions <ID>                    # Identities sharing a certified key
+pki ssh identity disable <ID>                       # No new certs; existing ones stay valid
+pki ssh identity offboard <ID> --reason "left"      # Disable + revoke its live certificates
 pki ssh user issue --identity-id <ID> --pubkey @~/.ssh/id_ed25519.pub \
     -p admins -p developers --ttl 3600 -e permit-pty
+pki ssh user certificates --identity-id <ID>        # List issued user certificates
 
 # Principals (roles)
 pki ssh principal create --name admins
 pki ssh principal map --host-id <HOST_ID> --principal-id <PID> --local-account root
 pki ssh principal grant --identity-id <ID> --principal-id <PID>
+pki ssh principal mappings                          # principal -> (host, local account), fleet-wide
+pki ssh principal stale-hosts                       # Maps changed since the last push
+pki ssh principal delete <PID>                      # Refused while anything still references it
+
+# Bulk certificate lifecycle
+pki ssh bulk expiring --within-seconds 86400        # Expiring within a window
+pki ssh bulk renew -i <CERT_ID> -i <CERT_ID>        # ...or --ids-file ids.txt
+pki ssh bulk revoke --ids-file ids.txt --reason "rotation"
 
 # Fleet tokens (automation credentials for the external SSH API)
 pki ssh token mint --name ci --op sign-host --op sign-user --host-ca-id <CA_ID>
@@ -402,31 +430,53 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 | `POST /ssh/blocks` | `pki ssh block create` |
 | `GET /ssh/blocks/fleet` | `pki ssh block fleet` |
 | `POST /ssh/blocks/unblock` | `pki ssh block unblock` |
+| `GET /ssh/bulk/expiring` | `pki ssh bulk expiring` |
+| `POST /ssh/bulk/renew` | `pki ssh bulk renew` |
+| `POST /ssh/bulk/revoke` | `pki ssh bulk revoke` |
 | `GET /ssh/cas` | `pki ssh ca list` |
 | `POST /ssh/cas` | `pki ssh ca create` |
+| `POST /ssh/cas/import` | `pki ssh ca import` |
+| `GET /ssh/cas/{caId}` | `pki ssh ca get` |
 | `POST /ssh/cas/{caId}/krl` | `pki ssh ca krl-generate` |
 | `GET /ssh/cas/{caId}/krl.bin` | `pki ssh ca krl` |
+| `POST /ssh/cas/{caId}/retire` | `pki ssh ca retire` |
 | `GET /ssh/cas/{caId}/revocations` | `pki ssh ca revocations` |
+| `POST /ssh/cas/{caId}/revoke` | `pki ssh ca revoke` |
+| `POST /ssh/cas/{caId}/revoke-key` | `pki ssh ca revoke-key` |
+| `POST /ssh/cas/{caId}/revoke-serial` | `pki ssh ca revoke-serial` |
+| `POST /ssh/cas/{caId}/rotate` | `pki ssh ca rotate` |
 | `POST /ssh/certs/{id}/revoke` | `pki ssh cert revoke` |
 | `GET /ssh/hosts` | `pki ssh host list` |
 | `POST /ssh/hosts` | `pki ssh host register` |
 | `POST /ssh/hosts/issue` | `pki ssh host issue` |
+| `GET /ssh/hosts/{id}` | `pki ssh host get` |
 | `GET /ssh/hosts/{id}/access` | `pki ssh host access` |
 | `GET /ssh/hosts/{id}/auth-principals` | `pki ssh host auth-principals` |
 | `POST /ssh/hosts/{id}/auth-principals/pushed` | `pki ssh host mark-pushed` |
 | `GET /ssh/hosts/{id}/blocks` | `pki ssh host blocks` |
+| `GET /ssh/hosts/{id}/deploy-bundle` | `pki ssh host deploy-bundle` |
+| `POST /ssh/hosts/{id}/ecies-key` | `pki ssh host ecies-key` |
+| `POST /ssh/hosts/{id}/offboard` | `pki ssh host offboard` |
+| `POST /ssh/hosts/{id}/revoke` | `pki ssh host revoke` |
+| `GET /ssh/identities` | `pki ssh identity list` |
 | `POST /ssh/identities` | `pki ssh identity create` |
 | `GET /ssh/identities/{id}/blocks` | `pki ssh identity blocks` |
 | `GET /ssh/identities/{id}/collisions` | `pki ssh identity collisions` |
+| `POST /ssh/identities/{id}/disable` | `pki ssh identity disable` |
+| `POST /ssh/identities/{id}/offboard` | `pki ssh identity offboard` |
 | `GET /ssh/metrics` | `pki ssh metrics` |
 | `GET /ssh/principals` | `pki ssh principal list` |
 | `POST /ssh/principals` | `pki ssh principal create` |
 | `POST /ssh/principals/grant` | `pki ssh principal grant` |
 | `POST /ssh/principals/map` | `pki ssh principal map` |
+| `GET /ssh/principals/mappings` | `pki ssh principal mappings` |
+| `GET /ssh/principals/stale-hosts` | `pki ssh principal stale-hosts` |
+| `DELETE /ssh/principals/{id}` | `pki ssh principal delete` |
 | `GET /ssh/tokens` | `pki ssh token list` |
 | `POST /ssh/tokens` | `pki ssh token mint` |
 | `POST /ssh/tokens/{id}/revoke` | `pki ssh token revoke` |
 | `GET /ssh/trust-anchors` | `pki ssh trust-anchors` |
+| `GET /ssh/users/certificates` | `pki ssh user certificates` |
 | `POST /ssh/users/issue` | `pki ssh user issue` |
 
 **External Issuer**

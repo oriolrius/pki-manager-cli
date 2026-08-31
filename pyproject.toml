@@ -1,6 +1,6 @@
 [project]
 name = "pki-cli"
-version = "0.3.0"
+version = "0.4.0"
 description = "CLI tool for PKI Manager - X.509 and SSH certificate management"
 readme = "README.md"
 requires-python = ">=3.11"

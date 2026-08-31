@@ -37,6 +37,7 @@ principal_app = typer.Typer(help="SSH principals (roles) & mappings", no_args_is
 token_app = typer.Typer(help="Fleet automation tokens", no_args_is_help=True)
 block_app = typer.Typer(help="Per-host access blocks", no_args_is_help=True)
 cert_app = typer.Typer(help="SSH certificate revocation", no_args_is_help=True)
+bulk_app = typer.Typer(help="Bulk SSH certificate lifecycle", no_args_is_help=True)
 
 ssh_app.add_typer(ca_app, name="ca")
 ssh_app.add_typer(host_app, name="host")
@@ -46,6 +47,7 @@ ssh_app.add_typer(principal_app, name="principal")
 ssh_app.add_typer(token_app, name="token")
 ssh_app.add_typer(block_app, name="block")
 ssh_app.add_typer(cert_app, name="cert")
+ssh_app.add_typer(bulk_app, name="bulk")
 
 OutputFormat = Annotated[str, typer.Option("--output", "-o", help="Output format: table, json")]
 OutFile = Annotated[Optional[Path], typer.Option("--output", "-o", help="Write output to a file instead of stdout")]
@@ -72,6 +74,17 @@ def _api():
 def _body(**kwargs) -> dict:
     """Build a request body, omitting keys whose value is ``None``."""
     return {k: v for k, v in kwargs.items() if v is not None}
+
+
+def _collect_ids(ids: Optional[list[str]], ids_file: Optional[Path]) -> list[str]:
+    """Merge repeated ``--cert-id`` flags with an optional one-ID-per-line file."""
+    collected = list(ids or [])
+    if ids_file:
+        collected += [ln.strip() for ln in Path(ids_file).read_text().splitlines() if ln.strip()]
+    if not collected:
+        print_error("At least one --cert-id (or --ids-file) is required")
+        raise typer.Exit(1)
+    return collected
 
 
 def _render(data, output: str, *, columns: list[str] | None = None, title: str | None = None) -> None:
@@ -105,6 +118,8 @@ def _emit_bytes(data: bytes, output_file: Optional[Path], default_name: str) -> 
 CA_COLUMNS = ["id", "caType", "label", "keyAlgorithm", "status", "nextSerial", "createdAt"]
 HOST_COLUMNS = ["id", "fqdn", "displayName", "status", "hasPubkey", "hostKeyAlgorithm", "lastKrlVersion", "enrolledAt"]
 FLEET_COLUMNS = ["fqdn", "status", "blockCount", "krlNumber", "lastKrlVersion", "lastKrlFetchAt"]
+IDENTITY_COLUMNS = ["id", "subject", "email", "status", "createdAt"]
+USER_CERT_COLUMNS = ["id", "serial", "keyId", "principals", "status", "validAfter", "validBefore"]
 
 
 @ca_app.command("list")
@@ -168,6 +183,106 @@ def ca_krl(
     with _api():
         data = authed("GET", f"/ssh/cas/{ca_id}/krl.bin", expect_bytes=True)
         _emit_bytes(data, output_file, f"revoked_keys-{ca_id}.krl")
+
+
+@ca_app.command("get")
+def ca_get(
+    ca_id: Annotated[str, typer.Argument(help="SSH CA ID")],
+    output: OutputFormat = "table",
+) -> None:
+    """Show one SSH CA."""
+    with _api():
+        _render(authed("GET", f"/ssh/cas/{ca_id}"), output, title="SSH CA")
+
+
+@ca_app.command("import")
+def ca_import(
+    ca_type: Annotated[str, typer.Option("--type", "-t", help="CA type: user or host")],
+    kms_key_id: Annotated[str, typer.Option("--kms-key-id", help="KMS private key ID")],
+    kms_public_key_id: Annotated[str, typer.Option("--kms-public-key-id", help="KMS public key ID")],
+    label: Annotated[Optional[str], typer.Option("--label", "-l", help="Human-readable label")] = None,
+    output: OutputFormat = "table",
+) -> None:
+    """Import an existing KMS keypair as an SSH CA."""
+    with _api():
+        body = _body(caType=ca_type, label=label, kmsKeyId=kms_key_id, kmsPublicKeyId=kms_public_key_id)
+        data = authed("POST", "/ssh/cas/import", json=body)
+        print_success("SSH CA imported")
+        _render(data, output)
+
+
+@ca_app.command("revoke")
+def ca_revoke(
+    ca_id: Annotated[str, typer.Argument(help="SSH CA ID")],
+    reason: Annotated[Optional[str], typer.Option("--reason", "-r", help="Reason")] = None,
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+    output: OutputFormat = "table",
+) -> None:
+    """Revoke an SSH CA (its certificates stop being trusted)."""
+    if not force and not typer.confirm(f"Revoke SSH CA {ca_id}?"):
+        raise typer.Abort()
+    with _api():
+        data = authed("POST", f"/ssh/cas/{ca_id}/revoke", json=_body(reason=reason))
+        print_success("SSH CA revoked")
+        _render(data, output)
+
+
+@ca_app.command("rotate")
+def ca_rotate(
+    ca_id: Annotated[str, typer.Argument(help="SSH CA ID")],
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+    output: OutputFormat = "table",
+) -> None:
+    """Rotate an SSH CA — new keypair, predecessor linked and kept for trust."""
+    if not force and not typer.confirm(f"Rotate SSH CA {ca_id}?"):
+        raise typer.Abort()
+    with _api():
+        data = authed("POST", f"/ssh/cas/{ca_id}/rotate")
+        print_success("SSH CA rotated — distribute the new public key")
+        _render(data, output)
+
+
+@ca_app.command("retire")
+def ca_retire(
+    ca_id: Annotated[str, typer.Argument(help="SSH CA ID")],
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+    output: OutputFormat = "table",
+) -> None:
+    """Retire an SSH CA — stops issuance, keeps existing certificates trusted."""
+    if not force and not typer.confirm(f"Retire SSH CA {ca_id}?"):
+        raise typer.Abort()
+    with _api():
+        data = authed("POST", f"/ssh/cas/{ca_id}/retire")
+        print_success("SSH CA retired")
+        _render(data, output)
+
+
+@ca_app.command("revoke-serial")
+def ca_revoke_serial(
+    ca_id: Annotated[str, typer.Argument(help="SSH CA ID")],
+    serial: Annotated[str, typer.Option("--serial", "-s", help="Certificate serial (integer string)")],
+    reason: Annotated[Optional[str], typer.Option("--reason", "-r", help="Reason")] = None,
+    output: OutputFormat = "table",
+) -> None:
+    """Revoke a serial under a CA without holding its certificate row (rebuilds the KRL)."""
+    with _api():
+        data = authed("POST", f"/ssh/cas/{ca_id}/revoke-serial", json=_body(serial=serial, reason=reason))
+        print_success(f"Serial {serial} revoked (CA KRL rebuilt)")
+        _render(data, output)
+
+
+@ca_app.command("revoke-key")
+def ca_revoke_key(
+    ca_id: Annotated[str, typer.Argument(help="SSH CA ID")],
+    fingerprint: Annotated[str, typer.Option("--fingerprint", help="Public key fingerprint (SHA256:...)")],
+    reason: Annotated[Optional[str], typer.Option("--reason", "-r", help="Reason")] = None,
+    output: OutputFormat = "table",
+) -> None:
+    """Revoke a public key by fingerprint — the only way to deny a key this PKI never issued."""
+    with _api():
+        data = authed("POST", f"/ssh/cas/{ca_id}/revoke-key", json=_body(fingerprint=fingerprint, reason=reason))
+        print_success("Key fingerprint revoked (CA KRL rebuilt)")
+        _render(data, output)
 
 
 # ---------------------------------------------------------------------------
@@ -272,6 +387,57 @@ def host_sshd_config(host_id: Annotated[str, typer.Argument(help="Host ID")], ou
         _emit_text(public("GET", f"/ssh/hosts/{host_id}/sshd-config"), output_file)
 
 
+@host_app.command("get")
+def host_get(host_id: Annotated[str, typer.Argument(help="Host ID")], output: OutputFormat = "table") -> None:
+    """Show one registered host."""
+    with _api():
+        _render(authed("GET", f"/ssh/hosts/{host_id}"), output, title="SSH Host")
+
+
+@host_app.command("deploy-bundle")
+def host_deploy_bundle(host_id: Annotated[str, typer.Argument(help="Host ID")], output: OutputFormat = "json") -> None:
+    """Build a host's deploy bundle (sshd drop-in, CA keys, on-host paths)."""
+    with _api():
+        _render(authed("GET", f"/ssh/hosts/{host_id}/deploy-bundle"), output)
+
+
+@host_app.command("revoke")
+def host_revoke(
+    host_id: Annotated[str, typer.Argument(help="Host ID")],
+    reason: Annotated[Optional[str], typer.Option("--reason", "-r", help="Reason")] = None,
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+) -> None:
+    """Revoke a host's current certificate (rebuilds the CA KRL)."""
+    if not force and not typer.confirm(f"Revoke the current certificate of host {host_id}?"):
+        raise typer.Abort()
+    with _api():
+        authed("POST", f"/ssh/hosts/{host_id}/revoke", json=_body(reason=reason))
+        print_success("Host certificate revoked")
+
+
+@host_app.command("ecies-key")
+def host_ecies_key(host_id: Annotated[str, typer.Argument(help="Host ID")], output: OutputFormat = "table") -> None:
+    """Register the host's ECDSA public key as its ECIES/KRL recipient."""
+    with _api():
+        data = authed("POST", f"/ssh/hosts/{host_id}/ecies-key")
+        print_success("ECIES recipient key registered")
+        _render(data, output)
+
+
+@host_app.command("offboard")
+def host_offboard(
+    host_id: Annotated[str, typer.Argument(help="Host ID")],
+    reason: Annotated[Optional[str], typer.Option("--reason", "-r", help="Reason")] = None,
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+) -> None:
+    """Offboard a host — terminal: retires its per-host KRL lineage."""
+    if not force and not typer.confirm(f"Offboard host {host_id}? This is terminal."):
+        raise typer.Abort()
+    with _api():
+        authed("POST", f"/ssh/hosts/{host_id}/offboard", json=_body(reason=reason))
+        print_success("Host offboarded")
+
+
 # ---------------------------------------------------------------------------
 # Identities
 # ---------------------------------------------------------------------------
@@ -302,6 +468,40 @@ def identity_collisions(identity_id: Annotated[str, typer.Argument(help="Identit
     """List identities sharing a certified public key with this one."""
     with _api():
         _render(authed("GET", f"/ssh/identities/{identity_id}/collisions"), output, title="Key collisions")
+
+
+@identity_app.command("list")
+def identity_list(output: OutputFormat = "table") -> None:
+    """List user identities."""
+    with _api():
+        _render(authed("GET", "/ssh/identities"), output, columns=IDENTITY_COLUMNS, title="SSH Identities")
+
+
+@identity_app.command("disable")
+def identity_disable(
+    identity_id: Annotated[str, typer.Argument(help="Identity ID")],
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+) -> None:
+    """Disable an identity (blocks further issuance; existing certs stay valid)."""
+    if not force and not typer.confirm(f"Disable identity {identity_id}?"):
+        raise typer.Abort()
+    with _api():
+        authed("POST", f"/ssh/identities/{identity_id}/disable")
+        print_success("Identity disabled")
+
+
+@identity_app.command("offboard")
+def identity_offboard(
+    identity_id: Annotated[str, typer.Argument(help="Identity ID")],
+    reason: Annotated[Optional[str], typer.Option("--reason", "-r", help="Reason")] = None,
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+) -> None:
+    """Offboard an identity — disable it and revoke its live certificates."""
+    if not force and not typer.confirm(f"Offboard identity {identity_id}? Live certificates will be revoked."):
+        raise typer.Abort()
+    with _api():
+        authed("POST", f"/ssh/identities/{identity_id}/offboard", json=_body(reason=reason))
+        print_success("Identity offboarded")
 
 
 # ---------------------------------------------------------------------------
@@ -341,6 +541,17 @@ def user_issue(
         data = authed("POST", "/ssh/users/issue", json=body)
         print_success("User certificate issued")
         _render(data, output)
+
+
+@user_app.command("certificates")
+def user_certificates(
+    identity_id: Annotated[Optional[str], typer.Option("--identity-id", help="Filter by identity ID")] = None,
+    output: OutputFormat = "table",
+) -> None:
+    """List user certificates (optionally for one identity)."""
+    with _api():
+        data = authed("GET", "/ssh/users/certificates", params={"identityId": identity_id})
+        _render(data, output, columns=USER_CERT_COLUMNS, title="User Certificates")
 
 
 # ---------------------------------------------------------------------------
@@ -393,6 +604,33 @@ def principal_grant(
         print_success("Entitlement granted")
 
 
+@principal_app.command("mappings")
+def principal_mappings(output: OutputFormat = "json") -> None:
+    """Show principal -> (host, local account) mappings across the fleet."""
+    with _api():
+        _render(authed("GET", "/ssh/principals/mappings"), output, title="Principal mappings")
+
+
+@principal_app.command("stale-hosts")
+def principal_stale_hosts(output: OutputFormat = "table") -> None:
+    """List hosts whose principal maps changed after the last push."""
+    with _api():
+        _render(authed("GET", "/ssh/principals/stale-hosts"), output, title="Stale hosts")
+
+
+@principal_app.command("delete")
+def principal_delete(
+    principal_id: Annotated[str, typer.Argument(help="Principal ID")],
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+) -> None:
+    """Delete a principal (rejected while entitlements or host maps reference it)."""
+    if not force and not typer.confirm(f"Delete principal {principal_id}?"):
+        raise typer.Abort()
+    with _api():
+        authed("DELETE", f"/ssh/principals/{principal_id}")
+        print_success("Principal deleted")
+
+
 # ---------------------------------------------------------------------------
 # Fleet tokens
 # ---------------------------------------------------------------------------
@@ -432,6 +670,52 @@ def token_revoke(
     with _api():
         authed("POST", f"/ssh/tokens/{token_id}/revoke")
         print_success(f"Token {token_id} revoked")
+
+
+# ---------------------------------------------------------------------------
+# Bulk certificate lifecycle
+# ---------------------------------------------------------------------------
+@bulk_app.command("expiring")
+def bulk_expiring(
+    within_seconds: Annotated[int, typer.Option("--within-seconds", "-w", help="Window in seconds")] = 604800,
+    output: OutputFormat = "table",
+) -> None:
+    """List SSH certificates expiring within a window (default 7 days)."""
+    with _api():
+        data = authed("GET", "/ssh/bulk/expiring", params={"withinSeconds": within_seconds})
+        _render(data, output, title="Expiring SSH certificates")
+
+
+@bulk_app.command("renew")
+def bulk_renew(
+    cert_id: Annotated[Optional[list[str]], typer.Option("--cert-id", "-i", help="Certificate ID (repeatable)")] = None,
+    ids_file: Annotated[Optional[Path], typer.Option("--ids-file", help="File with one certificate ID per line")] = None,
+    output: OutputFormat = "json",
+) -> None:
+    """Renew many SSH certificates by ID."""
+    ids = _collect_ids(cert_id, ids_file)
+    with _api():
+        data = authed("POST", "/ssh/bulk/renew", json={"certIds": ids})
+        print_success(f"Renew requested for {len(ids)} certificate(s)")
+        _render(data, output)
+
+
+@bulk_app.command("revoke")
+def bulk_revoke(
+    cert_id: Annotated[Optional[list[str]], typer.Option("--cert-id", "-i", help="Certificate ID (repeatable)")] = None,
+    ids_file: Annotated[Optional[Path], typer.Option("--ids-file", help="File with one certificate ID per line")] = None,
+    reason: Annotated[Optional[str], typer.Option("--reason", "-r", help="Reason")] = None,
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+    output: OutputFormat = "json",
+) -> None:
+    """Revoke many SSH certificates by ID (rebuilds the affected KRLs)."""
+    ids = _collect_ids(cert_id, ids_file)
+    if not force and not typer.confirm(f"Revoke {len(ids)} SSH certificate(s)?"):
+        raise typer.Abort()
+    with _api():
+        data = authed("POST", "/ssh/bulk/revoke", json=_body(certIds=ids, reason=reason))
+        print_success(f"Revoke requested for {len(ids)} certificate(s)")
+        _render(data, output)
 
 
 # ---------------------------------------------------------------------------
