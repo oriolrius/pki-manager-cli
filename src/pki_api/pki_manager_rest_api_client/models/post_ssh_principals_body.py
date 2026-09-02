@@ -17,16 +17,20 @@ class PostSshPrincipalsBody:
     Attributes:
         name (str):
         description (str | Unset):
+        zone (str | Unset):
     """
 
     name: str
     description: str | Unset = UNSET
+    zone: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         name = self.name
 
         description = self.description
+
+        zone = self.zone
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -37,6 +41,8 @@ class PostSshPrincipalsBody:
         )
         if description is not UNSET:
             field_dict["description"] = description
+        if zone is not UNSET:
+            field_dict["zone"] = zone
 
         return field_dict
 
@@ -47,9 +53,12 @@ class PostSshPrincipalsBody:
 
         description = d.pop("description", UNSET)
 
+        zone = d.pop("zone", UNSET)
+
         post_ssh_principals_body = cls(
             name=name,
             description=description,
+            zone=zone,
         )
 
         post_ssh_principals_body.additional_properties = d

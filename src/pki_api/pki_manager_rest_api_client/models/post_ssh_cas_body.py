@@ -18,16 +18,20 @@ class PostSshCasBody:
     Attributes:
         ca_type (PostSshCasBodyCaType):
         label (str | Unset):
+        zone (str | Unset):
     """
 
     ca_type: PostSshCasBodyCaType
     label: str | Unset = UNSET
+    zone: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         ca_type = self.ca_type.value
 
         label = self.label
+
+        zone = self.zone
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -38,6 +42,8 @@ class PostSshCasBody:
         )
         if label is not UNSET:
             field_dict["label"] = label
+        if zone is not UNSET:
+            field_dict["zone"] = zone
 
         return field_dict
 
@@ -48,9 +54,12 @@ class PostSshCasBody:
 
         label = d.pop("label", UNSET)
 
+        zone = d.pop("zone", UNSET)
+
         post_ssh_cas_body = cls(
             ca_type=ca_type,
             label=label,
+            zone=zone,
         )
 
         post_ssh_cas_body.additional_properties = d

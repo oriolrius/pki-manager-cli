@@ -82,7 +82,7 @@ def sync_detailed(
     | GetSshIdentitiesResponse500
     | list[GetSshIdentitiesResponse200Item]
 ]:
-    """List user identities
+    """List user identities (optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -110,7 +110,7 @@ def sync(
     | list[GetSshIdentitiesResponse200Item]
     | None
 ):
-    """List user identities
+    """List user identities (optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -133,7 +133,7 @@ async def asyncio_detailed(
     | GetSshIdentitiesResponse500
     | list[GetSshIdentitiesResponse200Item]
 ]:
-    """List user identities
+    """List user identities (optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -159,7 +159,7 @@ async def asyncio(
     | list[GetSshIdentitiesResponse200Item]
     | None
 ):
-    """List user identities
+    """List user identities (optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

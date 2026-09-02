@@ -18,11 +18,13 @@ class PostSshIdentitiesBody:
         subject (str):
         email (str | Unset):
         external_subject (str | Unset):
+        zone (str | Unset):
     """
 
     subject: str
     email: str | Unset = UNSET
     external_subject: str | Unset = UNSET
+    zone: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -31,6 +33,8 @@ class PostSshIdentitiesBody:
         email = self.email
 
         external_subject = self.external_subject
+
+        zone = self.zone
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -43,6 +47,8 @@ class PostSshIdentitiesBody:
             field_dict["email"] = email
         if external_subject is not UNSET:
             field_dict["externalSubject"] = external_subject
+        if zone is not UNSET:
+            field_dict["zone"] = zone
 
         return field_dict
 
@@ -55,10 +61,13 @@ class PostSshIdentitiesBody:
 
         external_subject = d.pop("externalSubject", UNSET)
 
+        zone = d.pop("zone", UNSET)
+
         post_ssh_identities_body = cls(
             subject=subject,
             email=email,
             external_subject=external_subject,
+            zone=zone,
         )
 
         post_ssh_identities_body.additional_properties = d

@@ -76,7 +76,7 @@ def sync_detailed(
 ) -> Response[
     GetSshHostsResponse400 | GetSshHostsResponse500 | list[GetSshHostsResponse200Item]
 ]:
-    """List hosts (optionally filter by ?fqdn=)
+    """List hosts (optionally filter by ?fqdn= and/or ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -104,7 +104,7 @@ def sync(
     | list[GetSshHostsResponse200Item]
     | None
 ):
-    """List hosts (optionally filter by ?fqdn=)
+    """List hosts (optionally filter by ?fqdn= and/or ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -125,7 +125,7 @@ async def asyncio_detailed(
 ) -> Response[
     GetSshHostsResponse400 | GetSshHostsResponse500 | list[GetSshHostsResponse200Item]
 ]:
-    """List hosts (optionally filter by ?fqdn=)
+    """List hosts (optionally filter by ?fqdn= and/or ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -151,7 +151,7 @@ async def asyncio(
     | list[GetSshHostsResponse200Item]
     | None
 ):
-    """List hosts (optionally filter by ?fqdn=)
+    """List hosts (optionally filter by ?fqdn= and/or ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

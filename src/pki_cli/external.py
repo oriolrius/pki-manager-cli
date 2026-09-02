@@ -259,11 +259,13 @@ def ext_auth_principals(
 @ssh_ext_app.command("krl")
 def ext_krl(
     host_id: Annotated[str, typer.Option("--host-id", help="Host FQDN whose encrypted KRL to fetch")],
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Zone ID or name (required once more than one zone is active)")] = None,
     output_file: Annotated[Optional[Path], typer.Option("--output", "-o", help="Output file for the ECIES ciphertext")] = None,
 ) -> None:
     """Fetch a host's ECIES-encrypted KRL envelope (no token; only the host can decrypt)."""
     with _api():
-        data = token_call("POST", "/external/ssh/krl", None, json={"host_id": host_id}, expect_bytes=True)
+        data = token_call("POST", "/external/ssh/krl", None,
+                          json=_body(host_id=host_id, zone=zone), expect_bytes=True)
         path = Path(output_file) if output_file else Path(f"krl-{host_id}.enc")
         path.write_bytes(data)
         print_success(f"Saved {len(data)} bytes to {path}")

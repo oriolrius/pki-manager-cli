@@ -38,6 +38,7 @@ token_app = typer.Typer(help="Fleet automation tokens", no_args_is_help=True)
 block_app = typer.Typer(help="Per-host access blocks", no_args_is_help=True)
 cert_app = typer.Typer(help="SSH certificate revocation", no_args_is_help=True)
 bulk_app = typer.Typer(help="Bulk SSH certificate lifecycle", no_args_is_help=True)
+zone_app = typer.Typer(help="SSH zones (multi-tenant scoping)", no_args_is_help=True)
 
 ssh_app.add_typer(ca_app, name="ca")
 ssh_app.add_typer(host_app, name="host")
@@ -48,6 +49,7 @@ ssh_app.add_typer(token_app, name="token")
 ssh_app.add_typer(block_app, name="block")
 ssh_app.add_typer(cert_app, name="cert")
 ssh_app.add_typer(bulk_app, name="bulk")
+ssh_app.add_typer(zone_app, name="zone")
 
 OutputFormat = Annotated[str, typer.Option("--output", "-o", help="Output format: table, json")]
 OutFile = Annotated[Optional[Path], typer.Option("--output", "-o", help="Write output to a file instead of stdout")]
@@ -119,25 +121,31 @@ CA_COLUMNS = ["id", "caType", "label", "keyAlgorithm", "status", "nextSerial", "
 HOST_COLUMNS = ["id", "fqdn", "displayName", "status", "hasPubkey", "hostKeyAlgorithm", "lastKrlVersion", "enrolledAt"]
 FLEET_COLUMNS = ["fqdn", "status", "blockCount", "krlNumber", "lastKrlVersion", "lastKrlFetchAt"]
 IDENTITY_COLUMNS = ["id", "subject", "email", "status", "createdAt"]
+ZONE_COLUMNS = ["id", "name", "displayName", "status", "description", "createdAt"]
 USER_CERT_COLUMNS = ["id", "serial", "keyId", "principals", "status", "validAfter", "validBefore"]
 
 
 @ca_app.command("list")
-def ca_list(output: OutputFormat = "table") -> None:
+def ca_list(
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Restrict to one zone (ID or name)")] = None,
+    output: OutputFormat = "table",
+) -> None:
     """List SSH CAs (user + host)."""
     with _api():
-        _render(authed("GET", "/ssh/cas"), output, columns=CA_COLUMNS, title="SSH CAs")
+        _render(authed("GET", "/ssh/cas", params={"zoneId": zone}), output,
+                columns=CA_COLUMNS, title="SSH CAs")
 
 
 @ca_app.command("create")
 def ca_create(
     ca_type: Annotated[str, typer.Option("--type", "-t", help="CA type: user or host")],
     label: Annotated[Optional[str], typer.Option("--label", "-l", help="Human-readable label")] = None,
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Zone ID or name (required once more than one zone is active)")] = None,
     output: OutputFormat = "table",
 ) -> None:
     """Create an SSH CA (user or host)."""
     with _api():
-        data = authed("POST", "/ssh/cas", json=_body(caType=ca_type, label=label))
+        data = authed("POST", "/ssh/cas", json=_body(caType=ca_type, label=label, zone=zone))
         print_success("SSH CA created")
         _render(data, output)
 
@@ -201,11 +209,13 @@ def ca_import(
     kms_key_id: Annotated[str, typer.Option("--kms-key-id", help="KMS private key ID")],
     kms_public_key_id: Annotated[str, typer.Option("--kms-public-key-id", help="KMS public key ID")],
     label: Annotated[Optional[str], typer.Option("--label", "-l", help="Human-readable label")] = None,
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Zone ID or name (required once more than one zone is active)")] = None,
     output: OutputFormat = "table",
 ) -> None:
     """Import an existing KMS keypair as an SSH CA."""
     with _api():
-        body = _body(caType=ca_type, label=label, kmsKeyId=kms_key_id, kmsPublicKeyId=kms_public_key_id)
+        body = _body(caType=ca_type, label=label, kmsKeyId=kms_key_id,
+                     kmsPublicKeyId=kms_public_key_id, zone=zone)
         data = authed("POST", "/ssh/cas/import", json=body)
         print_success("SSH CA imported")
         _render(data, output)
@@ -291,11 +301,13 @@ def ca_revoke_key(
 @host_app.command("list")
 def host_list(
     fqdn: Annotated[Optional[str], typer.Option("--fqdn", help="Filter by FQDN")] = None,
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Restrict to one zone (ID or name)")] = None,
     output: OutputFormat = "table",
 ) -> None:
     """List registered SSH hosts."""
     with _api():
-        _render(authed("GET", "/ssh/hosts", params={"fqdn": fqdn}), output, columns=HOST_COLUMNS, title="SSH Hosts")
+        _render(authed("GET", "/ssh/hosts", params={"fqdn": fqdn, "zoneId": zone}), output,
+                columns=HOST_COLUMNS, title="SSH Hosts")
 
 
 @host_app.command("register")
@@ -304,6 +316,7 @@ def host_register(
     pubkey: Annotated[str, typer.Option("--pubkey", "-k", help="OpenSSH host public key (or @file)")],
     display_name: Annotated[Optional[str], typer.Option("--display-name", help="Display name")] = None,
     address: Annotated[Optional[list[str]], typer.Option("--address", "-a", help="Host address (repeatable)")] = None,
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Zone ID or name (required once more than one zone is active)")] = None,
     output: OutputFormat = "table",
 ) -> None:
     """Register a host by its OpenSSH host public key."""
@@ -313,6 +326,7 @@ def host_register(
             displayName=display_name,
             addresses=address,
             opensshHostPubkey=read_value_or_file(pubkey),
+            zone=zone,
         )
         data = authed("POST", "/ssh/hosts", json=body)
         print_success("Host registered")
@@ -446,11 +460,12 @@ def identity_create(
     subject: Annotated[str, typer.Option("--subject", "-s", help="Identity subject")],
     email: Annotated[Optional[str], typer.Option("--email", help="Email")] = None,
     external_subject: Annotated[Optional[str], typer.Option("--external-subject", help="External IdP subject")] = None,
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Zone ID or name (required once more than one zone is active)")] = None,
     output: OutputFormat = "table",
 ) -> None:
     """Create a user identity."""
     with _api():
-        body = _body(subject=subject, email=email, externalSubject=external_subject)
+        body = _body(subject=subject, email=email, externalSubject=external_subject, zone=zone)
         data = authed("POST", "/ssh/identities", json=body)
         print_success("Identity created")
         _render(data, output)
@@ -471,10 +486,14 @@ def identity_collisions(identity_id: Annotated[str, typer.Argument(help="Identit
 
 
 @identity_app.command("list")
-def identity_list(output: OutputFormat = "table") -> None:
+def identity_list(
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Restrict to one zone (ID or name)")] = None,
+    output: OutputFormat = "table",
+) -> None:
     """List user identities."""
     with _api():
-        _render(authed("GET", "/ssh/identities"), output, columns=IDENTITY_COLUMNS, title="SSH Identities")
+        _render(authed("GET", "/ssh/identities", params={"zoneId": zone}), output,
+                columns=IDENTITY_COLUMNS, title="SSH Identities")
 
 
 @identity_app.command("disable")
@@ -558,21 +577,25 @@ def user_certificates(
 # Principals
 # ---------------------------------------------------------------------------
 @principal_app.command("list")
-def principal_list(output: OutputFormat = "table") -> None:
+def principal_list(
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Restrict to one zone (ID or name)")] = None,
+    output: OutputFormat = "table",
+) -> None:
     """List SSH principals (roles)."""
     with _api():
-        _render(authed("GET", "/ssh/principals"), output, title="SSH Principals")
+        _render(authed("GET", "/ssh/principals", params={"zoneId": zone}), output, title="SSH Principals")
 
 
 @principal_app.command("create")
 def principal_create(
     name: Annotated[str, typer.Option("--name", "-n", help="Principal name")],
     description: Annotated[Optional[str], typer.Option("--description", "-d", help="Description")] = None,
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Zone ID or name (required once more than one zone is active)")] = None,
     output: OutputFormat = "table",
 ) -> None:
     """Create an SSH principal (role)."""
     with _api():
-        data = authed("POST", "/ssh/principals", json=_body(name=name, description=description))
+        data = authed("POST", "/ssh/principals", json=_body(name=name, description=description, zone=zone))
         print_success("Principal created")
         _render(data, output)
 
@@ -647,6 +670,7 @@ def token_mint(
     op: Annotated[Optional[list[str]], typer.Option("--op", help="Allowed op (repeatable): sign-host, sign-user, register-host-pubkey, get-principals")] = None,
     user_ca_id: Annotated[Optional[str], typer.Option("--user-ca-id", help="User CA the token may sign for")] = None,
     host_ca_id: Annotated[Optional[str], typer.Option("--host-ca-id", help="Host CA the token may sign for")] = None,
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Zone ID or name (required once more than one zone is active)")] = None,
     output: OutputFormat = "json",
 ) -> None:
     """Mint a fleet token (plaintext secret shown once)."""
@@ -654,7 +678,8 @@ def token_mint(
         print_error("At least one --op is required")
         raise typer.Exit(1)
     with _api():
-        data = authed("POST", "/ssh/tokens", json=_body(name=name, opSet=op, userCaId=user_ca_id, hostCaId=host_ca_id))
+        data = authed("POST", "/ssh/tokens", json=_body(name=name, opSet=op, userCaId=user_ca_id,
+                                                        hostCaId=host_ca_id, zone=zone))
         print_success("Fleet token minted — copy the secret now, it is not shown again")
         _render(data, output)
 
@@ -778,17 +803,27 @@ def ssh_cert_revoke(
 # Top-level: trust material, metrics, public KRL downloads
 # ---------------------------------------------------------------------------
 @ssh_app.command("trust-anchors")
-def trust_anchors(output: OutputFormat = "json") -> None:
-    """Show SSH trust anchors (TrustedUserCAKeys / @cert-authority)."""
+def trust_anchors(
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Zone ID or name (required once more than one zone is active)")] = None,
+    output: OutputFormat = "json",
+) -> None:
+    """Show SSH trust anchors (TrustedUserCAKeys / @cert-authority).
+
+    Unlike the list commands this resolves a single zone server-side, so
+    ``--zone`` becomes required as soon as a second zone is active.
+    """
     with _api():
-        _render(authed("GET", "/ssh/trust-anchors"), output)
+        _render(authed("GET", "/ssh/trust-anchors", params={"zoneId": zone}), output)
 
 
 @ssh_app.command("metrics")
-def metrics(output: OutputFormat = "json") -> None:
+def metrics(
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Restrict to one zone (ID or name)")] = None,
+    output: OutputFormat = "json",
+) -> None:
     """Show SSH cert/KRL health metrics (expiring, stale KRLs, non-pulling hosts)."""
     with _api():
-        _render(authed("GET", "/ssh/metrics"), output)
+        _render(authed("GET", "/ssh/metrics", params={"zoneId": zone}), output)
 
 
 @ssh_app.command("trusted-user-ca-keys")
@@ -843,3 +878,98 @@ def krl_host(
         else:
             data = public("GET", f"/krl/hosts/{host_id}.bin", expect_bytes=True)
             _emit_bytes(data, output_file, f"revoked_keys-host-{host_id}.krl")
+
+
+# ---------------------------------------------------------------------------
+# Zones
+# ---------------------------------------------------------------------------
+# A zone scopes SSH CAs, hosts, identities, principals and fleet tokens so one
+# installation can serve several tenants (server decision-017). Zone resolution
+# is fail-closed: the server picks the zone implicitly only while exactly one
+# is active, and errors once several are, so every creating command below takes
+# `--zone`.
+@zone_app.command("list")
+def zone_list(
+    include_archived: Annotated[bool, typer.Option("--include-archived", help="Also list archived zones")] = False,
+    output: OutputFormat = "table",
+) -> None:
+    """List SSH zones."""
+    with _api():
+        params = {"includeArchived": "true"} if include_archived else None
+        _render(authed("GET", "/ssh/zones", params=params), output, columns=ZONE_COLUMNS, title="SSH Zones")
+
+
+@zone_app.command("get")
+def zone_get(
+    ref: Annotated[str, typer.Argument(help="Zone ID or name")],
+    output: OutputFormat = "table",
+) -> None:
+    """Show one SSH zone by ID or name."""
+    with _api():
+        _render(authed("GET", f"/ssh/zones/{ref}"), output, title="SSH Zone")
+
+
+@zone_app.command("create")
+def zone_create(
+    name: Annotated[str, typer.Option("--name", "-n", help="Zone slug — immutable once created")],
+    display_name: Annotated[Optional[str], typer.Option("--display-name", help="Human-readable name")] = None,
+    description: Annotated[Optional[str], typer.Option("--description", "-d", help="Description")] = None,
+    output: OutputFormat = "table",
+) -> None:
+    """Create an SSH zone.
+
+    Creating a second zone makes zone resolution ambiguous server-side, so from
+    then on every `--zone`-bearing command must name one explicitly.
+    """
+    with _api():
+        data = authed(
+            "POST",
+            "/ssh/zones",
+            json=_body(name=name, displayName=display_name, description=description),
+        )
+        print_success(f"Zone {name} created")
+        _render(data, output)
+
+
+@zone_app.command("update")
+def zone_update(
+    ref: Annotated[str, typer.Argument(help="Zone ID or name")],
+    display_name: Annotated[Optional[str], typer.Option("--display-name", help="New human-readable name")] = None,
+    description: Annotated[Optional[str], typer.Option("--description", "-d", help="New description")] = None,
+    output: OutputFormat = "table",
+) -> None:
+    """Update a zone's display name or description (the slug is immutable)."""
+    if display_name is None and description is None:
+        print_error("Nothing to update — pass --display-name and/or --description")
+        raise typer.Exit(1)
+    with _api():
+        data = authed("POST", f"/ssh/zones/{ref}", json=_body(displayName=display_name, description=description))
+        print_success(f"Zone {ref} updated")
+        _render(data, output)
+
+
+@zone_app.command("archive")
+def zone_archive(
+    ref: Annotated[str, typer.Argument(help="Zone ID or name")],
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+    output: OutputFormat = "table",
+) -> None:
+    """Archive a zone — blocks new entities and issuance, keeps serving existing trust material."""
+    if not force and not typer.confirm(f"Archive zone {ref}?"):
+        raise typer.Abort()
+    with _api():
+        data = authed("POST", f"/ssh/zones/{ref}/archive")
+        print_success(f"Zone {ref} archived")
+        _render(data, output)
+
+
+@zone_app.command("unarchive")
+def zone_unarchive(
+    ref: Annotated[str, typer.Argument(help="Zone ID or name")],
+    output: OutputFormat = "table",
+) -> None:
+    """Reactivate an archived zone."""
+    with _api():
+        data = authed("POST", f"/ssh/zones/{ref}/unarchive")
+        print_success(f"Zone {ref} reactivated")
+        _render(data, output)

@@ -10,11 +10,11 @@ the server root. See [Command ↔ endpoint map](#command--endpoint-map).
 
 | pki-cli | PKI Manager | REST API |
 |---------|-------------|----------|
-| 0.4.0   | 3.9.5       | v1.0.0   |
+| 0.5.0   | 3.11.0      | v1.0.0   |
 
-> 0.4.0 adds the 22 SSH lifecycle endpoints from the server's SSH REST/tRPC parity
-> work (TASK-216), which landed after the 3.9.5 tag. On an older server those
-> commands return 404; everything else works unchanged.
+> Against an older server, commands for endpoints it does not have return 404;
+> everything else works unchanged. SSH zones need 3.11.0+, and the 22 SSH
+> lifecycle commands need the SSH REST/tRPC parity work that followed 3.9.5.
 
 ## Installation
 
@@ -258,8 +258,17 @@ pki ssh block unblock --host-id <HOST_ID> --identity-id <ID>
 pki ssh block fleet                                 # Fleet-wide block + KRL distribution
 pki ssh cert revoke <CERT_ID> --reason "key compromise"
 
+# Zones (multi-tenant scoping)
+pki ssh zone list                                   # Active zones
+pki ssh zone list --include-archived
+pki ssh zone get tenant-b                           # By ID or name
+pki ssh zone create --name tenant-b --display-name "Tenant B"
+pki ssh zone update tenant-b --display-name "Tenant B Ltd"
+pki ssh zone archive tenant-b                       # Blocks new entities, keeps trust material served
+pki ssh zone unarchive tenant-b
+
 # Trust material & health
-pki ssh trust-anchors                               # TrustedUserCAKeys / @cert-authority
+pki ssh trust-anchors --zone default                # TrustedUserCAKeys / @cert-authority
 pki ssh host-ca-keys                                # Host CA public key(s)
 pki ssh cert-authority -p '*.acme.internal'         # known_hosts @cert-authority lines
 pki ssh metrics                                     # KRL / expiry health metrics
@@ -268,6 +277,28 @@ pki ssh krl <CA_ID> -o revoked_keys                 # Download a CA's public KRL
 pki ssh ca krl <CA_ID> -o revoked_keys              # Same, authenticated
 pki ssh krl-host <HOST_ID>                          # A host's composed public KRL
 ```
+
+> **Zones and `--zone`.** A zone scopes SSH CAs, hosts, identities, principals and
+> fleet tokens so one installation can serve several tenants, and entities may only
+> reference CAs in their own zone.
+>
+> Zone resolution is *fail-closed*: the server resolves the zone implicitly only
+> while exactly one is active, and errors once several are. Two groups of commands
+> take `--zone <id-or-name>`:
+>
+> - **Required once a second zone exists** — the commands that create something, or
+>   that resolve exactly one zone: `ssh ca create`, `ssh ca import`,
+>   `ssh host register`, `ssh identity create`, `ssh principal create`,
+>   `ssh token mint`, `ssh trust-anchors` and `external ssh krl`. Without `--zone`
+>   these fail with *"zone is ambiguous — N zones exist"*.
+> - **Optional filter** — `ssh ca list`, `ssh host list`, `ssh identity list`,
+>   `ssh principal list` and `ssh metrics` span every zone by default and narrow to
+>   one when `--zone` is given.
+>
+> Note the server documents the zone selector on the read endpoints only in their
+> OpenAPI *summary* text (`?zoneId=`), not as a declared parameter — likewise
+> `?includeArchived=` on `GET /ssh/zones`. The CLI sends them anyway; a client
+> generated purely from the spec could not.
 
 > The public trust-material routes (`ca pub`, `host cert`, `sshd-config`,
 > `host-ca-keys`, `trusted-user-ca-keys`, `cert-authority`, `krl`) are served at
@@ -380,8 +411,8 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 |----------|---------|
 | `GET /cas/` | `pki ca list` |
 | `POST /cas/` | `pki ca create` |
-| `GET /cas/{id}` | `pki ca get` |
 | `DELETE /cas/{id}` | `pki ca delete` |
+| `GET /cas/{id}` | `pki ca get` |
 | `GET /cas/{id}/certificates` | `pki ca certs` |
 | `GET /cas/{id}/crls` | `pki crl list` |
 | `POST /cas/{id}/crls` | `pki crl generate` |
@@ -394,8 +425,8 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 |----------|---------|
 | `GET /certificates/` | `pki cert list` |
 | `POST /certificates/` | `pki cert issue` |
-| `GET /certificates/{id}` | `pki cert get` |
 | `DELETE /certificates/{id}` | `pki cert delete` |
+| `GET /certificates/{id}` | `pki cert get` |
 | `GET /certificates/{id}/download` | `pki cert download` |
 | `POST /certificates/{id}/renew` | `pki cert renew` |
 | `POST /certificates/{id}/revoke` | `pki cert revoke` |
@@ -478,6 +509,12 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 | `GET /ssh/trust-anchors` | `pki ssh trust-anchors` |
 | `GET /ssh/users/certificates` | `pki ssh user certificates` |
 | `POST /ssh/users/issue` | `pki ssh user issue` |
+| `GET /ssh/zones` | `pki ssh zone list` |
+| `POST /ssh/zones` | `pki ssh zone create` |
+| `GET /ssh/zones/{ref}` | `pki ssh zone get` |
+| `POST /ssh/zones/{ref}` | `pki ssh zone update` |
+| `POST /ssh/zones/{ref}/archive` | `pki ssh zone archive` |
+| `POST /ssh/zones/{ref}/unarchive` | `pki ssh zone unarchive` |
 
 **External Issuer**
 

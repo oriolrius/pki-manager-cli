@@ -82,7 +82,7 @@ def sync_detailed(
     | GetSshPrincipalsResponse500
     | list[GetSshPrincipalsResponse200Item]
 ]:
-    """List SSH principals (roles)
+    """List SSH principals (roles; optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -110,7 +110,7 @@ def sync(
     | list[GetSshPrincipalsResponse200Item]
     | None
 ):
-    """List SSH principals (roles)
+    """List SSH principals (roles; optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -133,7 +133,7 @@ async def asyncio_detailed(
     | GetSshPrincipalsResponse500
     | list[GetSshPrincipalsResponse200Item]
 ]:
-    """List SSH principals (roles)
+    """List SSH principals (roles; optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -159,7 +159,7 @@ async def asyncio(
     | list[GetSshPrincipalsResponse200Item]
     | None
 ):
-    """List SSH principals (roles)
+    """List SSH principals (roles; optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

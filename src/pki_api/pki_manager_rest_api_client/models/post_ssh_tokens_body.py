@@ -20,12 +20,14 @@ class PostSshTokensBody:
         op_set (list[PostSshTokensBodyOpSetItem]):
         user_ca_id (str | Unset):
         host_ca_id (str | Unset):
+        zone (str | Unset):
     """
 
     name: str
     op_set: list[PostSshTokensBodyOpSetItem]
     user_ca_id: str | Unset = UNSET
     host_ca_id: str | Unset = UNSET
+    zone: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -40,6 +42,8 @@ class PostSshTokensBody:
 
         host_ca_id = self.host_ca_id
 
+        zone = self.zone
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -52,6 +56,8 @@ class PostSshTokensBody:
             field_dict["userCaId"] = user_ca_id
         if host_ca_id is not UNSET:
             field_dict["hostCaId"] = host_ca_id
+        if zone is not UNSET:
+            field_dict["zone"] = zone
 
         return field_dict
 
@@ -71,11 +77,14 @@ class PostSshTokensBody:
 
         host_ca_id = d.pop("hostCaId", UNSET)
 
+        zone = d.pop("zone", UNSET)
+
         post_ssh_tokens_body = cls(
             name=name,
             op_set=op_set,
             user_ca_id=user_ca_id,
             host_ca_id=host_ca_id,
+            zone=zone,
         )
 
         post_ssh_tokens_body.additional_properties = d

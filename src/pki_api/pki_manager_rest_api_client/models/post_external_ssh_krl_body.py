@@ -16,19 +16,25 @@ class PostExternalSshKrlBody:
     """
     Attributes:
         host_id (str | Unset): Target host FQDN
+        zone (str | Unset): Zone id or slug — required only when the FQDN exists in more than one zone (decision-017 A2)
     """
 
     host_id: str | Unset = UNSET
+    zone: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         host_id = self.host_id
+
+        zone = self.zone
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
         if host_id is not UNSET:
             field_dict["host_id"] = host_id
+        if zone is not UNSET:
+            field_dict["zone"] = zone
 
         return field_dict
 
@@ -37,8 +43,11 @@ class PostExternalSshKrlBody:
         d = dict(src_dict)
         host_id = d.pop("host_id", UNSET)
 
+        zone = d.pop("zone", UNSET)
+
         post_external_ssh_krl_body = cls(
             host_id=host_id,
+            zone=zone,
         )
 
         post_external_ssh_krl_body.additional_properties = d

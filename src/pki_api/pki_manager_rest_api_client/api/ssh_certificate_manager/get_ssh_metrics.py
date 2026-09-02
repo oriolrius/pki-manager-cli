@@ -69,7 +69,7 @@ def sync_detailed(
 ) -> Response[
     GetSshMetricsResponse200 | GetSshMetricsResponse400 | GetSshMetricsResponse500
 ]:
-    """SSH cert/KRL health metrics (expiring, stale KRLs, non-pulling hosts)
+    """SSH cert/KRL health metrics (expiring, stale KRLs, non-pulling hosts; ?zoneId= to scope)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -97,7 +97,7 @@ def sync(
     | GetSshMetricsResponse500
     | None
 ):
-    """SSH cert/KRL health metrics (expiring, stale KRLs, non-pulling hosts)
+    """SSH cert/KRL health metrics (expiring, stale KRLs, non-pulling hosts; ?zoneId= to scope)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -118,7 +118,7 @@ async def asyncio_detailed(
 ) -> Response[
     GetSshMetricsResponse200 | GetSshMetricsResponse400 | GetSshMetricsResponse500
 ]:
-    """SSH cert/KRL health metrics (expiring, stale KRLs, non-pulling hosts)
+    """SSH cert/KRL health metrics (expiring, stale KRLs, non-pulling hosts; ?zoneId= to scope)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -144,7 +144,7 @@ async def asyncio(
     | GetSshMetricsResponse500
     | None
 ):
-    """SSH cert/KRL health metrics (expiring, stale KRLs, non-pulling hosts)
+    """SSH cert/KRL health metrics (expiring, stale KRLs, non-pulling hosts; ?zoneId= to scope)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

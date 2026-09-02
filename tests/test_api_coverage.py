@@ -105,6 +105,12 @@ OPERATION_COMMANDS: dict[tuple[str, str], str] = {
     ("get", "/ssh/bulk/expiring"): "pki ssh bulk expiring",
     ("post", "/ssh/bulk/renew"): "pki ssh bulk renew",
     ("post", "/ssh/bulk/revoke"): "pki ssh bulk revoke",
+    ("get", "/ssh/zones"): "pki ssh zone list",
+    ("post", "/ssh/zones"): "pki ssh zone create",
+    ("get", "/ssh/zones/{ref}"): "pki ssh zone get",
+    ("post", "/ssh/zones/{ref}"): "pki ssh zone update",
+    ("post", "/ssh/zones/{ref}/archive"): "pki ssh zone archive",
+    ("post", "/ssh/zones/{ref}/unarchive"): "pki ssh zone unarchive",
     ("get", "/ssh/metrics"): "pki ssh metrics",
     ("get", "/ssh/trust-anchors"): "pki ssh trust-anchors",
     # External issuer (cluster token)

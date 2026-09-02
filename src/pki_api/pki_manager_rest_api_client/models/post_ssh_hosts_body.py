@@ -19,12 +19,14 @@ class PostSshHostsBody:
         openssh_host_pubkey (str):
         display_name (str | Unset):
         addresses (list[str] | Unset):
+        zone (str | Unset):
     """
 
     fqdn: str
     openssh_host_pubkey: str
     display_name: str | Unset = UNSET
     addresses: list[str] | Unset = UNSET
+    zone: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -38,6 +40,8 @@ class PostSshHostsBody:
         if not isinstance(self.addresses, Unset):
             addresses = self.addresses
 
+        zone = self.zone
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -50,6 +54,8 @@ class PostSshHostsBody:
             field_dict["displayName"] = display_name
         if addresses is not UNSET:
             field_dict["addresses"] = addresses
+        if zone is not UNSET:
+            field_dict["zone"] = zone
 
         return field_dict
 
@@ -64,11 +70,14 @@ class PostSshHostsBody:
 
         addresses = cast(list[str], d.pop("addresses", UNSET))
 
+        zone = d.pop("zone", UNSET)
+
         post_ssh_hosts_body = cls(
             fqdn=fqdn,
             openssh_host_pubkey=openssh_host_pubkey,
             display_name=display_name,
             addresses=addresses,
+            zone=zone,
         )
 
         post_ssh_hosts_body.additional_properties = d

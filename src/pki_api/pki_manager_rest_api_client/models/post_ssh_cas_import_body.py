@@ -20,12 +20,14 @@ class PostSshCasImportBody:
         kms_key_id (str):
         kms_public_key_id (str):
         label (str | Unset):
+        zone (str | Unset):
     """
 
     ca_type: PostSshCasImportBodyCaType
     kms_key_id: str
     kms_public_key_id: str
     label: str | Unset = UNSET
+    zone: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -36,6 +38,8 @@ class PostSshCasImportBody:
         kms_public_key_id = self.kms_public_key_id
 
         label = self.label
+
+        zone = self.zone
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -48,6 +52,8 @@ class PostSshCasImportBody:
         )
         if label is not UNSET:
             field_dict["label"] = label
+        if zone is not UNSET:
+            field_dict["zone"] = zone
 
         return field_dict
 
@@ -62,11 +68,14 @@ class PostSshCasImportBody:
 
         label = d.pop("label", UNSET)
 
+        zone = d.pop("zone", UNSET)
+
         post_ssh_cas_import_body = cls(
             ca_type=ca_type,
             kms_key_id=kms_key_id,
             kms_public_key_id=kms_public_key_id,
             label=label,
+            zone=zone,
         )
 
         post_ssh_cas_import_body.additional_properties = d

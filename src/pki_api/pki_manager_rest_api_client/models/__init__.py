@@ -550,6 +550,16 @@ from .get_ssh_users_certificates_response_500 import GetSshUsersCertificatesResp
 from .get_ssh_users_certificates_response_500_error import (
     GetSshUsersCertificatesResponse500Error,
 )
+from .get_ssh_zones_ref_response_200 import GetSshZonesRefResponse200
+from .get_ssh_zones_ref_response_400 import GetSshZonesRefResponse400
+from .get_ssh_zones_ref_response_400_error import GetSshZonesRefResponse400Error
+from .get_ssh_zones_ref_response_500 import GetSshZonesRefResponse500
+from .get_ssh_zones_ref_response_500_error import GetSshZonesRefResponse500Error
+from .get_ssh_zones_response_200_item import GetSshZonesResponse200Item
+from .get_ssh_zones_response_400 import GetSshZonesResponse400
+from .get_ssh_zones_response_400_error import GetSshZonesResponse400Error
+from .get_ssh_zones_response_500 import GetSshZonesResponse500
+from .get_ssh_zones_response_500_error import GetSshZonesResponse500Error
 from .key_algorithm import KeyAlgorithm
 from .list_cas_request_type_1 import ListCasRequestType1
 from .list_cas_request_type_1_algorithm import ListCasRequestType1Algorithm
@@ -1127,6 +1137,42 @@ from .post_ssh_users_issue_response_400 import PostSshUsersIssueResponse400
 from .post_ssh_users_issue_response_400_error import PostSshUsersIssueResponse400Error
 from .post_ssh_users_issue_response_500 import PostSshUsersIssueResponse500
 from .post_ssh_users_issue_response_500_error import PostSshUsersIssueResponse500Error
+from .post_ssh_zones_body import PostSshZonesBody
+from .post_ssh_zones_ref_archive_response_200 import PostSshZonesRefArchiveResponse200
+from .post_ssh_zones_ref_archive_response_400 import PostSshZonesRefArchiveResponse400
+from .post_ssh_zones_ref_archive_response_400_error import (
+    PostSshZonesRefArchiveResponse400Error,
+)
+from .post_ssh_zones_ref_archive_response_500 import PostSshZonesRefArchiveResponse500
+from .post_ssh_zones_ref_archive_response_500_error import (
+    PostSshZonesRefArchiveResponse500Error,
+)
+from .post_ssh_zones_ref_body import PostSshZonesRefBody
+from .post_ssh_zones_ref_response_200 import PostSshZonesRefResponse200
+from .post_ssh_zones_ref_response_400 import PostSshZonesRefResponse400
+from .post_ssh_zones_ref_response_400_error import PostSshZonesRefResponse400Error
+from .post_ssh_zones_ref_response_500 import PostSshZonesRefResponse500
+from .post_ssh_zones_ref_response_500_error import PostSshZonesRefResponse500Error
+from .post_ssh_zones_ref_unarchive_response_200 import (
+    PostSshZonesRefUnarchiveResponse200,
+)
+from .post_ssh_zones_ref_unarchive_response_400 import (
+    PostSshZonesRefUnarchiveResponse400,
+)
+from .post_ssh_zones_ref_unarchive_response_400_error import (
+    PostSshZonesRefUnarchiveResponse400Error,
+)
+from .post_ssh_zones_ref_unarchive_response_500 import (
+    PostSshZonesRefUnarchiveResponse500,
+)
+from .post_ssh_zones_ref_unarchive_response_500_error import (
+    PostSshZonesRefUnarchiveResponse500Error,
+)
+from .post_ssh_zones_response_200 import PostSshZonesResponse200
+from .post_ssh_zones_response_400 import PostSshZonesResponse400
+from .post_ssh_zones_response_400_error import PostSshZonesResponse400Error
+from .post_ssh_zones_response_500 import PostSshZonesResponse500
+from .post_ssh_zones_response_500_error import PostSshZonesResponse500Error
 from .renew_certificate_request import RenewCertificateRequest
 from .renew_certificate_request_subject import RenewCertificateRequestSubject
 from .revocation_reason import RevocationReason
@@ -1441,6 +1487,16 @@ __all__ = (
     "GetSshUsersCertificatesResponse400Error",
     "GetSshUsersCertificatesResponse500",
     "GetSshUsersCertificatesResponse500Error",
+    "GetSshZonesRefResponse200",
+    "GetSshZonesRefResponse400",
+    "GetSshZonesRefResponse400Error",
+    "GetSshZonesRefResponse500",
+    "GetSshZonesRefResponse500Error",
+    "GetSshZonesResponse200Item",
+    "GetSshZonesResponse400",
+    "GetSshZonesResponse400Error",
+    "GetSshZonesResponse500",
+    "GetSshZonesResponse500Error",
     "KeyAlgorithm",
     "ListCasRequestType1",
     "ListCasRequestType1Algorithm",
@@ -1768,6 +1824,28 @@ __all__ = (
     "PostSshUsersIssueResponse400Error",
     "PostSshUsersIssueResponse500",
     "PostSshUsersIssueResponse500Error",
+    "PostSshZonesBody",
+    "PostSshZonesRefArchiveResponse200",
+    "PostSshZonesRefArchiveResponse400",
+    "PostSshZonesRefArchiveResponse400Error",
+    "PostSshZonesRefArchiveResponse500",
+    "PostSshZonesRefArchiveResponse500Error",
+    "PostSshZonesRefBody",
+    "PostSshZonesRefResponse200",
+    "PostSshZonesRefResponse400",
+    "PostSshZonesRefResponse400Error",
+    "PostSshZonesRefResponse500",
+    "PostSshZonesRefResponse500Error",
+    "PostSshZonesRefUnarchiveResponse200",
+    "PostSshZonesRefUnarchiveResponse400",
+    "PostSshZonesRefUnarchiveResponse400Error",
+    "PostSshZonesRefUnarchiveResponse500",
+    "PostSshZonesRefUnarchiveResponse500Error",
+    "PostSshZonesResponse200",
+    "PostSshZonesResponse400",
+    "PostSshZonesResponse400Error",
+    "PostSshZonesResponse500",
+    "PostSshZonesResponse500Error",
     "RenewCertificateRequest",
     "RenewCertificateRequestSubject",
     "RevocationReason",

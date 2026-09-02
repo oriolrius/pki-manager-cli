@@ -73,7 +73,7 @@ def sync_detailed(
 ) -> Response[
     GetSshCasResponse400 | GetSshCasResponse500 | list[GetSshCasResponse200Item]
 ]:
-    """List SSH CAs
+    """List SSH CAs (optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -98,7 +98,7 @@ def sync(
 ) -> (
     GetSshCasResponse400 | GetSshCasResponse500 | list[GetSshCasResponse200Item] | None
 ):
-    """List SSH CAs
+    """List SSH CAs (optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -119,7 +119,7 @@ async def asyncio_detailed(
 ) -> Response[
     GetSshCasResponse400 | GetSshCasResponse500 | list[GetSshCasResponse200Item]
 ]:
-    """List SSH CAs
+    """List SSH CAs (optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -142,7 +142,7 @@ async def asyncio(
 ) -> (
     GetSshCasResponse400 | GetSshCasResponse500 | list[GetSshCasResponse200Item] | None
 ):
-    """List SSH CAs
+    """List SSH CAs (optionally filter by ?zoneId=)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
