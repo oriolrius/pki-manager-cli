@@ -1,0 +1,65 @@
+[package]
+name = "pki-cli"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.88"
+description = "CLI tool for PKI Manager - X.509 and SSH certificate management"
+license = "MIT"
+authors = ["Oriol Rius <oriol@joor.net>"]
+repository = "https://github.com/oriolrius/pki-manager-cli"
+homepage = "https://github.com/oriolrius/pki-manager-web"
+readme = "README.md"
+keywords = ["pki", "x509", "ssh", "certificates", "cli"]
+categories = ["command-line-utilities", "cryptography"]
+
+[[bin]]
+name = "pki"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+clap = { version = "4.6", features = ["derive", "env", "wrap_help"] }
+comfy-table = "8"
+dirs = "6"
+dotenvy = "0.15"
+httpdate = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+ureq = { version = "3.5", features = ["json"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+opt-level = "z"
+panic = "abort"
+
+# --- Linux packages -----------------------------------------------------------
+[package.metadata.deb]
+maintainer = "Oriol Rius <oriol@joor.net>"
+section = "utils"
+priority = "optional"
+extended-description = "Command-line client for the PKI Manager REST API: X.509 CAs and certificates, CRLs, the SSH Certificate Manager and the external issuer APIs."
+assets = [
+  ["target/release/pki", "usr/bin/pki", "755"],
+  ["README.md", "usr/share/doc/pki-cli/README.md", "644"],
+  ["LICENSE", "usr/share/doc/pki-cli/copyright", "644"],
+]
+
+[package.metadata.generate-rpm]
+summary = "CLI tool for PKI Manager - X.509 and SSH certificate management"
+assets = [
+  { source = "target/release/pki", dest = "/usr/bin/pki", mode = "755" },
+  { source = "README.md", dest = "/usr/share/doc/pki-cli/README.md", mode = "644", doc = true },
+  { source = "LICENSE", dest = "/usr/share/licenses/pki-cli/LICENSE", mode = "644", doc = true },
+]
