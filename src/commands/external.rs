@@ -178,7 +178,7 @@ pub enum RaCmd {
         #[arg(long)]
         data: String,
         /// Expected CMS content-encryption key length in bytes: 16, 24 or 32
-        /// (AES-128/192/256). Omit it to send the legacy request.
+        /// (16: AES-128, 24: 3DES, 32: AES-256). Omit it to send the legacy request.
         #[arg(long, value_name = "BYTES", value_parser = parse_session_key_length)]
         session_key_length: Option<u8>,
         #[command(flatten)]
@@ -476,7 +476,7 @@ fn run_ra(api: &Api, cmd: RaCmd) -> Result<()> {
     Ok(())
 }
 
-/// Session-key lengths (bytes) the RA decrypt endpoint accepts: AES-128/192/256.
+/// Session-key lengths (bytes) the RA decrypt endpoint accepts: 16 (AES-128), 24 (3DES), 32 (AES-256).
 const SESSION_KEY_LENGTHS: [u8; 3] = [16, 24, 32];
 
 fn parse_session_key_length(s: &str) -> std::result::Result<u8, String> {
