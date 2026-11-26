@@ -8,10 +8,13 @@ the machine-facing issuer APIs.
 has a corresponding command, plus the unauthenticated trust-material routes served at
 the server root. See [Command ↔ endpoint map](#command--endpoint-map).
 
-| pki-cli | PKI Manager | REST API |
-|---------|-------------|----------|
-| `main` (not released) | 3.18.0 | v1 |
-| 0.5.0   | 3.11.0      | v1       |
+One static binary, written in Rust. It has no runtime dependencies: no Python, no
+OpenSSL, no CA certificates package.
+
+| pki-cli | PKI Manager | REST API | Language |
+|---------|-------------|----------|----------|
+| 1.0.0   | 3.19.0      | v1       | Rust     |
+| 0.5.0   | 3.11.0      | v1       | Python (last Python release, tag `v0.5.0`) |
 
 > Against an older server, commands for endpoints it does not have return 404;
 > everything else works unchanged. SSH zones need 3.11.0+, and the 22 SSH
@@ -21,15 +24,51 @@ the server root. See [Command ↔ endpoint map](#command--endpoint-map).
 
 ## Installation
 
-```bash
-# Using uv (recommended)
-uv sync
-uv run pki --help
+Each [GitHub release](https://github.com/oriolrius/pki-manager-cli/releases) has these
+files. The Linux binaries are static (musl), so they run on every distribution.
 
-# Or install globally with pipx
-pipx install .
-pki --help
+| Platform | File |
+|----------|------|
+| Linux x86-64 (amd64) | `pki-cli-<version>-x86_64-unknown-linux-musl.tar.gz`, `pki-cli_<version>_amd64.deb`, `pki-cli-<version>-1.x86_64.rpm` |
+| Linux x86 (32-bit) | `pki-cli-<version>-i686-unknown-linux-musl.tar.gz`, `pki-cli_<version>_i386.deb`, `pki-cli-<version>-1.i686.rpm` |
+| Linux ARM 64-bit | `pki-cli-<version>-aarch64-unknown-linux-musl.tar.gz`, `pki-cli_<version>_arm64.deb`, `pki-cli-<version>-1.aarch64.rpm` |
+| Linux ARM 32-bit (ARMv7, for example Raspberry Pi OS 32-bit) | `pki-cli-<version>-armv7-unknown-linux-musleabihf.tar.gz`, `pki-cli_<version>_armhf.deb`, `pki-cli-<version>-1.armv7hl.rpm` |
+| Windows x86-64 | `pki-cli-<version>-x86_64-pc-windows-msvc.zip` |
+| macOS Apple silicon | `pki-cli-<version>-aarch64-apple-darwin.tar.gz` |
+
+`SHA256SUMS` has the checksum of every file, and each file has a GitHub build
+provenance attestation.
+
+```bash
+# Debian / Ubuntu
+sudo apt install ./pki-cli_1.0.0_amd64.deb
+
+# Fedora / RHEL / openSUSE
+sudo rpm -i pki-cli-1.0.0-1.x86_64.rpm
+
+# Any Linux or macOS: the archive has the `pki` binary
+tar -xzf pki-cli-1.0.0-x86_64-unknown-linux-musl.tar.gz
+sudo install pki-cli-1.0.0-x86_64-unknown-linux-musl/pki /usr/local/bin/
+
+# Check a download
+sha256sum --check --ignore-missing SHA256SUMS
+gh attestation verify pki-cli_1.0.0_amd64.deb --repo oriolrius/pki-manager-cli
 ```
+
+On macOS, a binary from a browser download is in quarantine; remove the flag with
+`xattr -d com.apple.quarantine pki`. On Windows, unzip the archive and put `pki.exe`
+in a folder on your `PATH`.
+
+### From source
+
+```bash
+cargo install --locked --git https://github.com/oriolrius/pki-manager-cli
+# or, in a checkout
+cargo build --release      # the binary is target/release/pki
+```
+
+Rust 1.88 or later. The last Python version is the tag `v0.5.0`
+(`uvx --from "git+https://github.com/oriolrius/pki-manager-cli.git@v0.5.0" pki`).
 
 ## Configuration
 
@@ -42,8 +81,9 @@ Only `PKI_API_URL` is mandatory. For authentication, pick one of three modes:
 3. **Anonymous** — leave all of the above unset. This only works against a deployment
    running with `OIDC_ENABLED=false`, typically a local dev stack.
 
-Settings come from environment variables, a `.env` file, or CLI options (in increasing
-order of precedence). Run `pki config` to see which mode is active.
+Settings come from CLI options, environment variables and `.env` files. The first
+source that has a value wins: CLI option, then environment variable, then `./.env`,
+then `~/.config/pki-cli/.env`. Run `pki config` to see which mode is active.
 
 ### 1. Using `.env` File (Recommended)
 
@@ -422,6 +462,10 @@ pki report generate --type certificate_inventory --output-file q3-inventory.csv
 | `PKI_RATE_LIMIT_MAX_WAIT` | Longest `Retry-After` the CLI waits for, in seconds (default `120`) | No |
 | `PKI_CLUSTER_TOKEN` | Cluster bearer token for `pki external` (X.509 issuer API) | For `external` |
 | `PKI_FLEET_TOKEN` | Fleet bearer token for `pki external ssh` (SSH automation API) | For `external ssh` |
+| `PKI_CA_BUNDLE` | PEM file with the CA certificates to trust for HTTPS (or `--ca-bundle`). Without it, the CLI trusts the Mozilla root store built into the binary | For a server with a private CA |
+| `SSL_CERT_FILE` | Same as `PKI_CA_BUNDLE`, read when `PKI_CA_BUNDLE` is not set | No |
+| `PKI_TOKEN_CACHE_FILE` | Where the OIDC token is cached (default `~/.cache/pki-cli/token`, mode 0600) | No |
+| `NO_COLOR` | Any value turns off colours | No |
 
 ## Command ↔ endpoint map
 
@@ -604,32 +648,60 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 
 ## Keeping up with the server
 
-`src/pki_api/` is generated from the server's OpenAPI document and `openapi.json`
-is the copy it was generated from. After a PKI Manager upgrade:
+The CLI has no generated client: each command sends its request with the field names
+of the server and shows the server's JSON as it comes (`-o json` gives that JSON
+unchanged, so a field the server adds is never lost). `openapi.json` is the server's
+OpenAPI document, and the test `src/coverage.rs` checks that every operation in it has
+a command. After a PKI Manager upgrade:
 
 ```bash
 curl -s "$PKI_API_URL/openapi.json" -o openapi.json   # from a server that runs the new release
-uv run openapi-python-client generate --path openapi.json --meta none \
-    --output-path /tmp/gen --overwrite
-rm -rf src/pki_api/pki_manager_rest_api_client
-cp -r /tmp/gen src/pki_api/pki_manager_rest_api_client
-touch src/pki_api/pki_manager_rest_api_client/py.typed
+cargo test                                            # fails while an operation has no command
 ```
 
-Then diff `openapi.json` against the previous revision for new or changed
-operations, add commands for anything new, and bump `PKI_MANAGER_VERSION` in
-`src/pki_cli/__init__.py`. `uv run pytest` fails while an operation has no command.
+Then diff `openapi.json` against the previous revision for new or changed operations,
+add or change the commands, map new operations in `src/coverage.rs`, and set
+`PKI_MANAGER_VERSION` in `src/main.rs`.
 
 When no server runs the new release yet, start the backend of that release from the
 [pki-manager-web](https://github.com/oriolrius/pki-manager-web) source (OIDC off, an
-empty database) and get `/api/v1/openapi.json` from it; the 3.18.0 document was made
-this way from the tag `v3.18.0`. `uv.lock` is in git and pins the generator
-(openapi-python-client 0.28.2), so `uv sync` gives the same tools on every checkout.
+empty database) and get `/api/v1/openapi.json` from it.
 
-The SSH, external and RA commands do not use the generated client: the document gives
-those routes loose schemas. Their request bodies come from the Zod schemas of the backend
-(`backend/src/trpc/ssh-schemas.ts`, `backend/src/rest/routes/`), so read those when a
-route changes.
+The OpenAPI document gives the SSH, external and RA routes loose schemas. Their request
+bodies come from the Zod schemas of the backend (`backend/src/trpc/ssh-schemas.ts`,
+`backend/src/rest/routes/`), so read those when a route changes.
+
+## Development
+
+```bash
+cargo fmt --all --check
+cargo clippy --all-targets -- -D warnings
+cargo test
+cargo run -- --help
+```
+
+`.github/workflows/ci.yml` runs these on Linux, Windows and macOS.
+`.github/workflows/release.yml` builds the six targets on every pull request that
+changes the code, and publishes a release for a `v*` tag (the tag must match the
+version in `Cargo.toml`). The Linux targets are cross-compiled with
+[cargo-zigbuild](https://github.com/rust-cross/cargo-zigbuild); the packages come from
+`cargo-deb` and `cargo-generate-rpm` (configured in `Cargo.toml`).
+
+## Changes from 0.x (Python)
+
+The commands, options, environment variables and messages are the same. These things
+changed:
+
+- `-o/--output` accepts only `table` or `json` (0.x showed a table for any other value).
+- Options with a fixed list of values (formats, reasons, types, statuses) are checked
+  before the CLI sends a request or asks for confirmation.
+- `-o json` prints the server's JSON unchanged: dates keep the server's form
+  (`2026-11-26T10:00:44.000Z`), and fields that the generated 0.x client dropped (for
+  example the `details` of audit entries) are now there.
+- `./.env` now wins over `~/.config/pki-cli/.env` (0.x used the global file first).
+  `PKI_CLUSTER_TOKEN` and `PKI_FLEET_TOKEN` are now read from `.env` files too.
+- New: `--ca-bundle` / `PKI_CA_BUNDLE` / `SSL_CERT_FILE`, `PKI_TOKEN_CACHE_FILE`, `NO_COLOR`.
+- `pki report generate` prints the report text unchanged (0.x could drop `[...]` parts).
 
 ## Security Notes
 
