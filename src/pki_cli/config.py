@@ -22,6 +22,8 @@ class Settings(BaseSettings):
         PKI_CLIENT_ID: OIDC client ID
         PKI_CLIENT_SECRET: OIDC client secret
         PKI_TOKEN: pre-obtained bearer token (skips the OIDC exchange)
+        PKI_RATE_LIMIT_RETRIES: times to wait for Retry-After and retry on HTTP 429 (default 0)
+        PKI_RATE_LIMIT_MAX_WAIT: longest Retry-After, in seconds, the CLI waits for (default 120)
     """
 
     model_config = SettingsConfigDict(
@@ -53,6 +55,18 @@ class Settings(BaseSettings):
     token: Optional[str] = Field(
         default=None,
         description="Pre-obtained bearer token; skips the OIDC client-credentials exchange",
+    )
+
+    # HTTP 429 handling (PKI Manager 3.18.0+ rate-limits the API)
+    rate_limit_retries: int = Field(
+        default=0,
+        ge=0,
+        description="Times to wait for Retry-After and retry on HTTP 429 (0 = fail at once)",
+    )
+    rate_limit_max_wait: float = Field(
+        default=120.0,
+        ge=0,
+        description="Longest Retry-After delay, in seconds, the CLI waits for",
     )
 
     # Output Configuration
@@ -125,6 +139,7 @@ def configure(
     client_id: Optional[str] = None,
     client_secret: Optional[str] = None,
     token: Optional[str] = None,
+    rate_limit_retries: Optional[int] = None,
 ) -> Settings:
     """Configure settings with optional overrides from CLI.
 
@@ -146,5 +161,7 @@ def configure(
         _settings.client_secret = client_secret
     if token:
         _settings.token = token
+    if rate_limit_retries is not None:
+        _settings.rate_limit_retries = rate_limit_retries
 
     return _settings

@@ -8,7 +8,24 @@ import httpx
 
 from pki_api.pki_manager_rest_api_client import AuthenticatedClient, Client
 
+from . import ratelimit
 from .config import Settings, get_settings
+
+
+def _notify(message: str) -> None:
+    from .output import print_warning
+
+    print_warning(message)
+
+
+def rate_limit_httpx_args(settings: Optional[Settings] = None) -> dict:
+    """``httpx.Client`` arguments for the HTTP 429 handling, from the settings."""
+    settings = settings or get_settings()
+    return ratelimit.httpx_args(
+        retries=settings.rate_limit_retries,
+        max_wait=settings.rate_limit_max_wait,
+        notify=_notify,
+    )
 
 
 class TokenManager:
@@ -109,11 +126,13 @@ class PKIClientWrapper:
             return Client(
                 base_url=self.settings.api_url,
                 raise_on_unexpected_status=True,
+                httpx_args=rate_limit_httpx_args(self.settings),
             )
         return AuthenticatedClient(
             base_url=self.settings.api_url,
             token=token,
             raise_on_unexpected_status=True,
+            httpx_args=rate_limit_httpx_args(self.settings),
         )
 
     def refresh_token(self) -> AuthenticatedClient | Client:

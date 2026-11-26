@@ -33,7 +33,9 @@ external_app = typer.Typer(
     no_args_is_help=True,
 )
 ssh_ext_app = typer.Typer(help="Fleet-token SSH automation (sign-host, sign-user, KRL)", no_args_is_help=True)
+ra_app = typer.Typer(help="SCEP registration authority key operations (SCEP integration token)", no_args_is_help=True)
 external_app.add_typer(ssh_ext_app, name="ssh")
+external_app.add_typer(ra_app, name="ra")
 
 OutputFormat = Annotated[str, typer.Option("--output", "-o", help="Output format: table, json")]
 
@@ -154,6 +156,75 @@ def revoke(
         _render(data, output)
 
 
+@external_app.command("certificate-status")
+def certificate_status(
+    serial: Annotated[str, typer.Argument(help="Certificate serial number (hex)")],
+    token: CLUSTER_TOKEN = None,
+    output: OutputFormat = "json",
+) -> None:
+    """Check that a certificate this integration issued is active (the SCEP renewal check).
+
+    ``active`` is false for a missing, expired or revoked certificate, and for
+    one that another integration owns.
+    """
+    with _api():
+        data = token_call("GET", f"/external/certificate-status/{serial}", _require(token, "PKI_CLUSTER_TOKEN"))
+        _render(data, output)
+
+
+# ---------------------------------------------------------------------------
+# SCEP registration authority (/api/v1/external/ra) — the SCEP gateway's API.
+# The server finds the RA key from the token; no key identifier is accepted.
+# ---------------------------------------------------------------------------
+@ra_app.command("state")
+def ra_state(token: CLUSTER_TOKEN = None, output: OutputFormat = "json") -> None:
+    """Show the state of the integration's SCEP RA key and certificate."""
+    with _api():
+        _render(token_call("GET", "/external/ra/state", _require(token, "PKI_CLUSTER_TOKEN")), output)
+
+
+@ra_app.command("provision")
+def ra_provision(token: CLUSTER_TOKEN = None, output: OutputFormat = "json") -> None:
+    """Create the integration's SCEP RA key and certificate."""
+    with _api():
+        data = token_call("POST", "/external/ra/provision", _require(token, "PKI_CLUSTER_TOKEN"), json={})
+        print_success("RA provisioned")
+        _render(data, output)
+
+
+@ra_app.command("renew")
+def ra_renew(token: CLUSTER_TOKEN = None, output: OutputFormat = "json") -> None:
+    """Renew the integration's SCEP RA certificate."""
+    with _api():
+        data = token_call("POST", "/external/ra/renew", _require(token, "PKI_CLUSTER_TOKEN"), json={})
+        print_success("RA renewed")
+        _render(data, output)
+
+
+@ra_app.command("sign")
+def ra_sign(
+    digest: Annotated[str, typer.Option("--digest", help="Digest to sign, base64 (or @file)")],
+    token: CLUSTER_TOKEN = None,
+    output: OutputFormat = "json",
+) -> None:
+    """Sign a digest with the RA key (the result is base64 in `data`)."""
+    with _api():
+        body = {"digest": (read_value_or_file(digest) or "").strip()}
+        _render(token_call("POST", "/external/ra/sign", _require(token, "PKI_CLUSTER_TOKEN"), json=body), output)
+
+
+@ra_app.command("decrypt")
+def ra_decrypt(
+    data: Annotated[str, typer.Option("--data", help="Ciphertext to decrypt, base64 (or @file)")],
+    token: CLUSTER_TOKEN = None,
+    output: OutputFormat = "json",
+) -> None:
+    """Decrypt a value with the RA key (the result is base64 in `data`)."""
+    with _api():
+        body = {"data": (read_value_or_file(data) or "").strip()}
+        _render(token_call("POST", "/external/ra/decrypt", _require(token, "PKI_CLUSTER_TOKEN"), json=body), output)
+
+
 # ---------------------------------------------------------------------------
 # Fleet-token SSH automation API (/api/v1/external/ssh)
 # ---------------------------------------------------------------------------
@@ -254,6 +325,29 @@ def ext_auth_principals(
     """Fetch a host's rendered AuthorizedPrincipalsFile map (host self-serve)."""
     with _api():
         _render(token_call("GET", f"/external/ssh/hosts/{fqdn}/auth-principals", _require(token, "PKI_FLEET_TOKEN")), output)
+
+
+@ssh_ext_app.command("principals-pushed")
+def ext_principals_pushed(
+    fqdn: Annotated[str, typer.Argument(help="Host FQDN")],
+    sha256: Annotated[str, typer.Option("--sha256", help="sha256 of the installed principal files (the value `auth-principals` gave)")],
+    token: FLEET_TOKEN = None,
+    output: OutputFormat = "json",
+) -> None:
+    """Confirm that a host installed its principal files (clears its Stale flag).
+
+    The server accepts the confirmation only when ``--sha256`` matches the
+    current render; if the maps changed in the meantime it answers 409.
+    """
+    with _api():
+        data = token_call(
+            "POST",
+            f"/external/ssh/hosts/{fqdn}/principals-pushed",
+            _require(token, "PKI_FLEET_TOKEN"),
+            json={"sha256": sha256},
+        )
+        print_success("Principal files confirmed as installed")
+        _render(data, output)
 
 
 @ssh_ext_app.command("krl")

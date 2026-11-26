@@ -79,7 +79,8 @@ def sync_detailed(
     | GetSshPrincipalsMappingsResponse400
     | GetSshPrincipalsMappingsResponse500
 ]:
-    """List principal -> (host, local account) mappings across the fleet
+    """List principal -> (host, local account) mappings (?zone=<id|slug> for one zone; all zones without
+    it)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -107,7 +108,8 @@ def sync(
     | GetSshPrincipalsMappingsResponse500
     | None
 ):
-    """List principal -> (host, local account) mappings across the fleet
+    """List principal -> (host, local account) mappings (?zone=<id|slug> for one zone; all zones without
+    it)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -130,7 +132,8 @@ async def asyncio_detailed(
     | GetSshPrincipalsMappingsResponse400
     | GetSshPrincipalsMappingsResponse500
 ]:
-    """List principal -> (host, local account) mappings across the fleet
+    """List principal -> (host, local account) mappings (?zone=<id|slug> for one zone; all zones without
+    it)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -156,7 +159,8 @@ async def asyncio(
     | GetSshPrincipalsMappingsResponse500
     | None
 ):
-    """List principal -> (host, local account) mappings across the fleet
+    """List principal -> (host, local account) mappings (?zone=<id|slug> for one zone; all zones without
+    it)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

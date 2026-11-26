@@ -10,11 +10,14 @@ the server root. See [Command ↔ endpoint map](#command--endpoint-map).
 
 | pki-cli | PKI Manager | REST API |
 |---------|-------------|----------|
-| 0.5.0   | 3.11.0      | v1.0.0   |
+| `main` (not released) | 3.18.0 | v1 |
+| 0.5.0   | 3.11.0      | v1       |
 
 > Against an older server, commands for endpoints it does not have return 404;
 > everything else works unchanged. SSH zones need 3.11.0+, and the 22 SSH
 > lifecycle commands need the SSH REST/tRPC parity work that followed 3.9.5.
+> A download with `--password` needs 3.17.0+: the CLI sends the password in the
+> `X-Export-Password` header, not in the URL, and an older server ignores that header.
 
 ## Installation
 
@@ -67,6 +70,22 @@ export PKI_TOKEN=eyJhbGciOi...
 # ...or nothing at all, against a dev server with OIDC disabled
 export PKI_API_URL=http://localhost:52081/api/v1
 ```
+
+### Rate limits (HTTP 429)
+
+PKI Manager 3.18.0 limits the request rate: per source IP on every route, and per
+token on the external and SSH fleet routes. When the server answers `429`, the CLI
+stops with a `RATE_LIMITED` error that includes the `Retry-After` time, and exits 1.
+
+To make the CLI wait and send the request again:
+
+```bash
+export PKI_RATE_LIMIT_RETRIES=3        # or: pki --rate-limit-retries 3 <command>
+export PKI_RATE_LIMIT_MAX_WAIT=120     # do not wait for a Retry-After longer than this (seconds)
+```
+
+The default is `0` retries. The CLI waits only when the server sends a `Retry-After`
+header (in 3.18.0 the SSH fleet routes send a 429 without it).
 
 ### 3. CLI Options
 
@@ -202,6 +221,7 @@ pki ssh ca import --type host --kms-key-id <K> --kms-public-key-id <P>
 pki ssh ca pub <CA_ID>                              # Print the CA's OpenSSH public key
 pki ssh ca rotate <CA_ID>                           # New keypair, predecessor kept for trust
 pki ssh ca retire <CA_ID>                           # Stop issuance, keep existing certs trusted
+pki ssh ca reissue-report <CA_ID>                   # Certificates that still depend on the CA (check before retire)
 pki ssh ca revoke <CA_ID> --reason "compromise"     # Revoke the CA itself
 pki ssh ca krl-generate <CA_ID>                     # Rebuild the CA's KRL
 pki ssh ca revocations <CA_ID>                      # List revocations
@@ -220,6 +240,7 @@ pki ssh host cert <HOST_ID>                         # Print the host certificate
 pki ssh host sshd-config <HOST_ID>                  # Print the sshd_config drop-in
 pki ssh host auth-principals <HOST_ID>              # Render AuthorizedPrincipalsFile contents
 pki ssh host mark-pushed <HOST_ID>                  # Clear Stale after pushing those files
+pki ssh host principal-maps <HOST_ID>               # Its principal -> local account mappings
 pki ssh host blocks <HOST_ID>                       # Block history (active + lifted)
 pki ssh host revoke <HOST_ID> --reason "rebuilt"    # Revoke its current certificate
 pki ssh host offboard <HOST_ID>                     # Terminal: retires its per-host KRL lineage
@@ -229,6 +250,7 @@ pki ssh identity list                               # List identities (subject i
 pki ssh identity create --subject alice
 pki ssh identity blocks <ID>                        # Active blocks + distribution state
 pki ssh identity collisions <ID>                    # Identities sharing a certified key
+pki ssh identity grants <ID>                        # Principals the identity is granted
 pki ssh identity disable <ID>                       # No new certs; existing ones stay valid
 pki ssh identity offboard <ID> --reason "left"      # Disable + revoke its live certificates
 pki ssh user issue --identity-id <ID> --pubkey @~/.ssh/id_ed25519.pub \
@@ -239,6 +261,8 @@ pki ssh user certificates --identity-id <ID>        # List issued user certifica
 pki ssh principal create --name admins
 pki ssh principal map --host-id <HOST_ID> --principal-id <PID> --local-account root
 pki ssh principal grant --identity-id <ID> --principal-id <PID>
+pki ssh principal unmap --host-id <HOST_ID> --principal-id <PID> --local-account root
+pki ssh principal revoke-grant --identity-id <ID> --principal-id <PID>
 pki ssh principal mappings                          # principal -> (host, local account), fleet-wide
 pki ssh principal stale-hosts                       # Maps changed since the last push
 pki ssh principal delete <PID>                      # Refused while anything still references it
@@ -250,6 +274,8 @@ pki ssh bulk revoke --ids-file ids.txt --reason "rotation"
 
 # Fleet tokens (automation credentials for the external SSH API)
 pki ssh token mint --name ci --op sign-host --op sign-user --host-ca-id <CA_ID>
+pki ssh token mint --name ci --op sign-user --user-ca-id <CA_ID> \
+    --allowed-principal deploy --max-ttl 3600       # Limit the principals and the validity
 pki ssh token revoke <TOKEN_ID>
 
 # Per-host access blocks + revocation
@@ -257,6 +283,7 @@ pki ssh block create --host-id <HOST_ID> --identity-id <ID> --reason "offboarded
 pki ssh block unblock --host-id <HOST_ID> --identity-id <ID>
 pki ssh block fleet                                 # Fleet-wide block + KRL distribution
 pki ssh cert revoke <CERT_ID> --reason "key compromise"
+pki ssh cert purge <CERT_ID>                        # Hard-delete a certificate issued by mistake
 
 # Zones (multi-tenant scoping)
 pki ssh zone list                                   # Active zones
@@ -310,8 +337,8 @@ pki ssh krl-host <HOST_ID>                          # A host's composed public K
 
 Machine-facing endpoints authenticated with their own bearer token (not OIDC):
 
-- **Cluster token** (`pkimg_...`, one per CA) for the X.509 issuer API —
-  `--token` or `PKI_CLUSTER_TOKEN`.
+- **Cluster token** (`pkimg_...`, one per CA; the server calls it an integration
+  token) for the X.509 issuer API — `--token` or `PKI_CLUSTER_TOKEN`.
 - **Fleet token** (minted via `pki ssh token mint`) for the SSH automation API —
   `--token` or `PKI_FLEET_TOKEN`.
 
@@ -321,12 +348,21 @@ pki external health --token pkimg_xxx
 pki external ca-bundle --token pkimg_xxx --output-file ca-chain.pem
 pki external sign --token pkimg_xxx --csr @request.csr --request-uid $(uuidgen)
 pki external revoke --token pkimg_xxx --serial 0A1B2C
+pki external certificate-status 0A1B2C --token pkimg_xxx   # active: true / false
+
+# SCEP registration authority (token of a `scep` integration; used by the SCEP gateway)
+pki external ra state --token pkimg_xxx
+pki external ra provision --token pkimg_xxx
+pki external ra renew --token pkimg_xxx
+pki external ra sign --token pkimg_xxx --digest <BASE64>
+pki external ra decrypt --token pkimg_xxx --data <BASE64>
 
 # SSH automation API (fleet token)
 pki external ssh sign-host --fqdn web1.acme.internal --pubkey @/etc/ssh/ssh_host_ecdsa_key.pub
 pki external ssh sign-user --subject alice --pubkey @~/.ssh/id_ed25519.pub -p admins
 pki external ssh register-host-pubkey --fqdn web1.acme.internal
 pki external ssh auth-principals web1.acme.internal
+pki external ssh principals-pushed web1.acme.internal --sha256 <SHA256>   # Confirm the install
 pki external ssh krl --host-id web1.acme.internal -o krl.enc   # ECIES envelope, no token
 ```
 
@@ -382,6 +418,8 @@ pki report generate --type certificate_inventory --output-file q3-inventory.csv
 | `PKI_CLIENT_ID` | OIDC client ID | With OIDC auth |
 | `PKI_CLIENT_SECRET` | OIDC client secret | With OIDC auth |
 | `PKI_TOKEN` | Pre-obtained bearer token (alternative to the three OIDC values) | No |
+| `PKI_RATE_LIMIT_RETRIES` | On HTTP 429, times to wait for `Retry-After` and retry (default `0`) | No |
+| `PKI_RATE_LIMIT_MAX_WAIT` | Longest `Retry-After` the CLI waits for, in seconds (default `120`) | No |
 | `PKI_CLUSTER_TOKEN` | Cluster bearer token for `pki external` (X.509 issuer API) | For `external` |
 | `PKI_FLEET_TOKEN` | Fleet bearer token for `pki external ssh` (SSH automation API) | For `external ssh` |
 
@@ -470,12 +508,14 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 | `GET /ssh/cas/{caId}` | `pki ssh ca get` |
 | `POST /ssh/cas/{caId}/krl` | `pki ssh ca krl-generate` |
 | `GET /ssh/cas/{caId}/krl.bin` | `pki ssh ca krl` |
+| `GET /ssh/cas/{caId}/reissue-report` | `pki ssh ca reissue-report` |
 | `POST /ssh/cas/{caId}/retire` | `pki ssh ca retire` |
 | `GET /ssh/cas/{caId}/revocations` | `pki ssh ca revocations` |
 | `POST /ssh/cas/{caId}/revoke` | `pki ssh ca revoke` |
 | `POST /ssh/cas/{caId}/revoke-key` | `pki ssh ca revoke-key` |
 | `POST /ssh/cas/{caId}/revoke-serial` | `pki ssh ca revoke-serial` |
 | `POST /ssh/cas/{caId}/rotate` | `pki ssh ca rotate` |
+| `DELETE /ssh/certs/{id}` | `pki ssh cert purge` |
 | `POST /ssh/certs/{id}/revoke` | `pki ssh cert revoke` |
 | `GET /ssh/hosts` | `pki ssh host list` |
 | `POST /ssh/hosts` | `pki ssh host register` |
@@ -488,12 +528,14 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 | `GET /ssh/hosts/{id}/deploy-bundle` | `pki ssh host deploy-bundle` |
 | `POST /ssh/hosts/{id}/ecies-key` | `pki ssh host ecies-key` |
 | `POST /ssh/hosts/{id}/offboard` | `pki ssh host offboard` |
+| `GET /ssh/hosts/{id}/principal-maps` | `pki ssh host principal-maps` |
 | `POST /ssh/hosts/{id}/revoke` | `pki ssh host revoke` |
 | `GET /ssh/identities` | `pki ssh identity list` |
 | `POST /ssh/identities` | `pki ssh identity create` |
 | `GET /ssh/identities/{id}/blocks` | `pki ssh identity blocks` |
 | `GET /ssh/identities/{id}/collisions` | `pki ssh identity collisions` |
 | `POST /ssh/identities/{id}/disable` | `pki ssh identity disable` |
+| `GET /ssh/identities/{id}/grants` | `pki ssh identity grants` |
 | `POST /ssh/identities/{id}/offboard` | `pki ssh identity offboard` |
 | `GET /ssh/metrics` | `pki ssh metrics` |
 | `GET /ssh/principals` | `pki ssh principal list` |
@@ -501,7 +543,9 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 | `POST /ssh/principals/grant` | `pki ssh principal grant` |
 | `POST /ssh/principals/map` | `pki ssh principal map` |
 | `GET /ssh/principals/mappings` | `pki ssh principal mappings` |
+| `POST /ssh/principals/revoke-grant` | `pki ssh principal revoke-grant` |
 | `GET /ssh/principals/stale-hosts` | `pki ssh principal stale-hosts` |
+| `POST /ssh/principals/unmap` | `pki ssh principal unmap` |
 | `DELETE /ssh/principals/{id}` | `pki ssh principal delete` |
 | `GET /ssh/tokens` | `pki ssh token list` |
 | `POST /ssh/tokens` | `pki ssh token mint` |
@@ -521,7 +565,13 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 | Endpoint | Command |
 |----------|---------|
 | `GET /external/ca-bundle` | `pki external ca-bundle` |
+| `GET /external/certificate-status/{serial}` | `pki external certificate-status` |
 | `GET /external/health` | `pki external health` |
+| `POST /external/ra/decrypt` | `pki external ra decrypt` |
+| `POST /external/ra/provision` | `pki external ra provision` |
+| `POST /external/ra/renew` | `pki external ra renew` |
+| `POST /external/ra/sign` | `pki external ra sign` |
+| `GET /external/ra/state` | `pki external ra state` |
 | `POST /external/revoke` | `pki external revoke` |
 | `POST /external/sign` | `pki external sign` |
 
@@ -530,6 +580,7 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 | Endpoint | Command |
 |----------|---------|
 | `GET /external/ssh/hosts/{fqdn}/auth-principals` | `pki external ssh auth-principals` |
+| `POST /external/ssh/hosts/{fqdn}/principals-pushed` | `pki external ssh principals-pushed` |
 | `POST /external/ssh/krl` | `pki external ssh krl` |
 | `POST /external/ssh/register-host-pubkey` | `pki external ssh register-host-pubkey` |
 | `POST /external/ssh/sign-host` | `pki external ssh sign-host` |
@@ -557,7 +608,7 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 is the copy it was generated from. After a PKI Manager upgrade:
 
 ```bash
-curl -s "$PKI_API_URL/openapi.json" -o openapi.json
+curl -s "$PKI_API_URL/openapi.json" -o openapi.json   # from a server that runs the new release
 uv run openapi-python-client generate --path openapi.json --meta none \
     --output-path /tmp/gen --overwrite
 rm -rf src/pki_api/pki_manager_rest_api_client
@@ -567,7 +618,18 @@ touch src/pki_api/pki_manager_rest_api_client/py.typed
 
 Then diff `openapi.json` against the previous revision for new or changed
 operations, add commands for anything new, and bump `PKI_MANAGER_VERSION` in
-`src/pki_cli/__init__.py`.
+`src/pki_cli/__init__.py`. `uv run pytest` fails while an operation has no command.
+
+When no server runs the new release yet, start the backend of that release from the
+[pki-manager-web](https://github.com/oriolrius/pki-manager-web) source (OIDC off, an
+empty database) and get `/api/v1/openapi.json` from it; the 3.18.0 document was made
+this way from the tag `v3.18.0`. `uv.lock` is in git and pins the generator
+(openapi-python-client 0.28.2), so `uv sync` gives the same tools on every checkout.
+
+The SSH, external and RA commands do not use the generated client: the document gives
+those routes loose schemas. Their request bodies come from the Zod schemas of the backend
+(`backend/src/trpc/ssh-schemas.ts`, `backend/src/rest/routes/`), so read those when a
+route changes.
 
 ## Security Notes
 

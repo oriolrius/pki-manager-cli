@@ -6,5 +6,7 @@ __version__ = "0.5.0"
 # bundled OpenAPI client in ``pki_api`` mirrors that release's
 # ``/api/v1/openapi.json`` exactly, so a newer server may expose endpoints this
 # CLI does not know about yet.
-PKI_MANAGER_VERSION = "3.11.0"
-API_VERSION = "1.0.0"
+PKI_MANAGER_VERSION = "3.18.0"
+# The REST API generation, as in the ``/api/v1`` URL prefix. (Since 3.12 the
+# ``info.version`` of the OpenAPI document is the server release, not "1.0.0".)
+API_VERSION = "1"

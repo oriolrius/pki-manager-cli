@@ -11,7 +11,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import click
 import pytest
 import typer
 
@@ -63,6 +62,7 @@ OPERATION_COMMANDS: dict[tuple[str, str], str] = {
     ("post", "/ssh/cas/{caId}/revoke"): "pki ssh ca revoke",
     ("post", "/ssh/cas/{caId}/rotate"): "pki ssh ca rotate",
     ("post", "/ssh/cas/{caId}/retire"): "pki ssh ca retire",
+    ("get", "/ssh/cas/{caId}/reissue-report"): "pki ssh ca reissue-report",
     ("post", "/ssh/cas/{caId}/revoke-serial"): "pki ssh ca revoke-serial",
     ("post", "/ssh/cas/{caId}/revoke-key"): "pki ssh ca revoke-key",
     ("post", "/ssh/cas/{caId}/krl"): "pki ssh ca krl-generate",
@@ -80,18 +80,22 @@ OPERATION_COMMANDS: dict[tuple[str, str], str] = {
     ("get", "/ssh/hosts/{id}/auth-principals"): "pki ssh host auth-principals",
     ("post", "/ssh/hosts/{id}/auth-principals/pushed"): "pki ssh host mark-pushed",
     ("get", "/ssh/hosts/{id}/blocks"): "pki ssh host blocks",
+    ("get", "/ssh/hosts/{id}/principal-maps"): "pki ssh host principal-maps",
     ("get", "/ssh/identities"): "pki ssh identity list",
     ("post", "/ssh/identities"): "pki ssh identity create",
     ("post", "/ssh/identities/{id}/disable"): "pki ssh identity disable",
     ("post", "/ssh/identities/{id}/offboard"): "pki ssh identity offboard",
     ("get", "/ssh/identities/{id}/blocks"): "pki ssh identity blocks",
     ("get", "/ssh/identities/{id}/collisions"): "pki ssh identity collisions",
+    ("get", "/ssh/identities/{id}/grants"): "pki ssh identity grants",
     ("post", "/ssh/users/issue"): "pki ssh user issue",
     ("get", "/ssh/users/certificates"): "pki ssh user certificates",
     ("get", "/ssh/principals"): "pki ssh principal list",
     ("post", "/ssh/principals"): "pki ssh principal create",
     ("post", "/ssh/principals/map"): "pki ssh principal map",
     ("post", "/ssh/principals/grant"): "pki ssh principal grant",
+    ("post", "/ssh/principals/unmap"): "pki ssh principal unmap",
+    ("post", "/ssh/principals/revoke-grant"): "pki ssh principal revoke-grant",
     ("get", "/ssh/principals/mappings"): "pki ssh principal mappings",
     ("get", "/ssh/principals/stale-hosts"): "pki ssh principal stale-hosts",
     ("delete", "/ssh/principals/{id}"): "pki ssh principal delete",
@@ -102,6 +106,7 @@ OPERATION_COMMANDS: dict[tuple[str, str], str] = {
     ("post", "/ssh/blocks/unblock"): "pki ssh block unblock",
     ("get", "/ssh/blocks/fleet"): "pki ssh block fleet",
     ("post", "/ssh/certs/{id}/revoke"): "pki ssh cert revoke",
+    ("delete", "/ssh/certs/{id}"): "pki ssh cert purge",
     ("get", "/ssh/bulk/expiring"): "pki ssh bulk expiring",
     ("post", "/ssh/bulk/renew"): "pki ssh bulk renew",
     ("post", "/ssh/bulk/revoke"): "pki ssh bulk revoke",
@@ -118,12 +123,20 @@ OPERATION_COMMANDS: dict[tuple[str, str], str] = {
     ("get", "/external/ca-bundle"): "pki external ca-bundle",
     ("post", "/external/sign"): "pki external sign",
     ("post", "/external/revoke"): "pki external revoke",
+    ("get", "/external/certificate-status/{serial}"): "pki external certificate-status",
+    # SCEP registration authority (SCEP integration token)
+    ("get", "/external/ra/state"): "pki external ra state",
+    ("post", "/external/ra/provision"): "pki external ra provision",
+    ("post", "/external/ra/renew"): "pki external ra renew",
+    ("post", "/external/ra/sign"): "pki external ra sign",
+    ("post", "/external/ra/decrypt"): "pki external ra decrypt",
     # SSH external issuer (fleet token)
     ("post", "/external/ssh/sign-host"): "pki external ssh sign-host",
     ("post", "/external/ssh/sign-user"): "pki external ssh sign-user",
     ("post", "/external/ssh/register-host-pubkey"): "pki external ssh register-host-pubkey",
     ("post", "/external/ssh/krl"): "pki external ssh krl",
     ("get", "/external/ssh/hosts/{fqdn}/auth-principals"): "pki external ssh auth-principals",
+    ("post", "/external/ssh/hosts/{fqdn}/principals-pushed"): "pki external ssh principals-pushed",
 }
 
 # Root-level routes marked `hide: true` on the server, so absent from the spec.
@@ -155,9 +168,12 @@ def _spec_operations() -> set[tuple[str, str]]:
 
 
 def _cli_commands() -> set[str]:
-    def walk(cmd: click.Command, prefix: str = "pki"):
-        if isinstance(cmd, click.Group):
-            for name, sub in cmd.commands.items():
+    # A group is a command that has sub-commands. No `click` import: Typer 0.27+
+    # has its own copy of Click and no longer installs the `click` package.
+    def walk(cmd, prefix: str = "pki"):
+        subcommands = getattr(cmd, "commands", None)
+        if subcommands is not None:
+            for name, sub in subcommands.items():
                 yield from walk(sub, f"{prefix} {name}")
         else:
             yield prefix

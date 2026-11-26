@@ -56,10 +56,10 @@ def _build_response(
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: PostExternalSignBody,
 ) -> Response[PostExternalSignResponse200]:
-    """Sign a CSR with the cluster CA (idempotent on requestUid)
+    """Sign a CSR with the integration CA (idempotent on requestUid)
 
     Args:
         body (PostExternalSignBody):
@@ -85,10 +85,10 @@ def sync_detailed(
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: PostExternalSignBody,
 ) -> PostExternalSignResponse200 | None:
-    """Sign a CSR with the cluster CA (idempotent on requestUid)
+    """Sign a CSR with the integration CA (idempotent on requestUid)
 
     Args:
         body (PostExternalSignBody):
@@ -109,10 +109,10 @@ def sync(
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: PostExternalSignBody,
 ) -> Response[PostExternalSignResponse200]:
-    """Sign a CSR with the cluster CA (idempotent on requestUid)
+    """Sign a CSR with the integration CA (idempotent on requestUid)
 
     Args:
         body (PostExternalSignBody):
@@ -136,10 +136,10 @@ async def asyncio_detailed(
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: PostExternalSignBody,
 ) -> PostExternalSignResponse200 | None:
-    """Sign a CSR with the cluster CA (idempotent on requestUid)
+    """Sign a CSR with the integration CA (idempotent on requestUid)
 
     Args:
         body (PostExternalSignBody):

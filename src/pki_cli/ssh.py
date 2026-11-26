@@ -36,7 +36,7 @@ identity_app = typer.Typer(help="SSH user identities", no_args_is_help=True)
 principal_app = typer.Typer(help="SSH principals (roles) & mappings", no_args_is_help=True)
 token_app = typer.Typer(help="Fleet automation tokens", no_args_is_help=True)
 block_app = typer.Typer(help="Per-host access blocks", no_args_is_help=True)
-cert_app = typer.Typer(help="SSH certificate revocation", no_args_is_help=True)
+cert_app = typer.Typer(help="SSH certificate revocation & purge", no_args_is_help=True)
 bulk_app = typer.Typer(help="Bulk SSH certificate lifecycle", no_args_is_help=True)
 zone_app = typer.Typer(help="SSH zones (multi-tenant scoping)", no_args_is_help=True)
 
@@ -267,6 +267,13 @@ def ca_retire(
         _render(data, output)
 
 
+@ca_app.command("reissue-report")
+def ca_reissue_report(ca_id: Annotated[str, typer.Argument(help="SSH CA ID")], output: OutputFormat = "json") -> None:
+    """Show which certificates still depend on a CA (the gate before `retire`)."""
+    with _api():
+        _render(authed("GET", f"/ssh/cas/{ca_id}/reissue-report"), output, title="Re-issue report")
+
+
 @ca_app.command("revoke-serial")
 def ca_revoke_serial(
     ca_id: Annotated[str, typer.Argument(help="SSH CA ID")],
@@ -387,6 +394,13 @@ def host_mark_pushed(
         _render(data, output)
 
 
+@host_app.command("principal-maps")
+def host_principal_maps(host_id: Annotated[str, typer.Argument(help="Host ID")], output: OutputFormat = "table") -> None:
+    """List a host's principal -> local account mappings."""
+    with _api():
+        _render(authed("GET", f"/ssh/hosts/{host_id}/principal-maps"), output, title="Host principal maps")
+
+
 @host_app.command("cert")
 def host_cert(host_id: Annotated[str, typer.Argument(help="Host ID")], output_file: OutFile = None) -> None:
     """Print a host's current certificate (public endpoint)."""
@@ -483,6 +497,13 @@ def identity_collisions(identity_id: Annotated[str, typer.Argument(help="Identit
     """List identities sharing a certified public key with this one."""
     with _api():
         _render(authed("GET", f"/ssh/identities/{identity_id}/collisions"), output, title="Key collisions")
+
+
+@identity_app.command("grants")
+def identity_grants(identity_id: Annotated[str, typer.Argument(help="Identity ID")], output: OutputFormat = "table") -> None:
+    """List the principals an identity is granted."""
+    with _api():
+        _render(authed("GET", f"/ssh/identities/{identity_id}/grants"), output, title="Identity grants")
 
 
 @identity_app.command("list")
@@ -627,11 +648,41 @@ def principal_grant(
         print_success("Entitlement granted")
 
 
+@principal_app.command("unmap")
+def principal_unmap(
+    host_id: Annotated[str, typer.Option("--host-id", help="Host ID")],
+    principal_id: Annotated[str, typer.Option("--principal-id", help="Principal ID")],
+    local_account: Annotated[str, typer.Option("--local-account", help="Local account name on the host")],
+) -> None:
+    """Remove a principal -> local account mapping from a host (the host becomes Stale until pushed)."""
+    with _api():
+        authed(
+            "POST",
+            "/ssh/principals/unmap",
+            json=_body(hostId=host_id, principalId=principal_id, localAccount=local_account),
+        )
+        print_success("Principal unmapped from host account")
+
+
+@principal_app.command("revoke-grant")
+def principal_revoke_grant(
+    identity_id: Annotated[str, typer.Option("--identity-id", help="Identity ID")],
+    principal_id: Annotated[str, typer.Option("--principal-id", help="Principal ID")],
+) -> None:
+    """Remove a principal from an identity's grants (existing certificates stay valid)."""
+    with _api():
+        authed("POST", "/ssh/principals/revoke-grant", json=_body(identityId=identity_id, principalId=principal_id))
+        print_success("Entitlement removed")
+
+
 @principal_app.command("mappings")
-def principal_mappings(output: OutputFormat = "json") -> None:
+def principal_mappings(
+    zone: Annotated[Optional[str], typer.Option("--zone", help="Restrict to one zone (ID or name)")] = None,
+    output: OutputFormat = "json",
+) -> None:
     """Show principal -> (host, local account) mappings across the fleet."""
     with _api():
-        _render(authed("GET", "/ssh/principals/mappings"), output, title="Principal mappings")
+        _render(authed("GET", "/ssh/principals/mappings", params={"zone": zone}), output, title="Principal mappings")
 
 
 @principal_app.command("stale-hosts")
@@ -671,6 +722,8 @@ def token_mint(
     user_ca_id: Annotated[Optional[str], typer.Option("--user-ca-id", help="User CA the token may sign for")] = None,
     host_ca_id: Annotated[Optional[str], typer.Option("--host-ca-id", help="Host CA the token may sign for")] = None,
     zone: Annotated[Optional[str], typer.Option("--zone", help="Zone ID or name (required once more than one zone is active)")] = None,
+    allowed_principal: Annotated[Optional[list[str]], typer.Option("--allowed-principal", help="Principal the token may put in a user certificate (repeatable; omit for no restriction)")] = None,
+    max_valid_for_seconds: Annotated[Optional[int], typer.Option("--max-valid-for-seconds", "--max-ttl", min=1, help="Longest certificate validity, in seconds, the token may ask for")] = None,
     output: OutputFormat = "json",
 ) -> None:
     """Mint a fleet token (plaintext secret shown once)."""
@@ -678,8 +731,10 @@ def token_mint(
         print_error("At least one --op is required")
         raise typer.Exit(1)
     with _api():
-        data = authed("POST", "/ssh/tokens", json=_body(name=name, opSet=op, userCaId=user_ca_id,
-                                                        hostCaId=host_ca_id, zone=zone))
+        data = authed("POST", "/ssh/tokens", json=_body(
+            name=name, opSet=op, userCaId=user_ca_id, hostCaId=host_ca_id, zone=zone,
+            allowedPrincipals=allowed_principal or None, maxValidForSeconds=max_valid_for_seconds,
+        ))
         print_success("Fleet token minted — copy the secret now, it is not shown again")
         _render(data, output)
 
@@ -796,6 +851,34 @@ def ssh_cert_revoke(
     with _api():
         data = authed("POST", f"/ssh/certs/{cert_id}/revoke", json=_body(reason=reason))
         print_success("SSH certificate revoked (CA KRL rebuilt)")
+        _render(data, output)
+
+
+@cert_app.command("purge")
+def ssh_cert_purge(
+    cert_id: Annotated[str, typer.Argument(help="SSH certificate ID")],
+    force_revoked: Annotated[bool, typer.Option("--force-revoked", help="Also purge a certificate that is revoked AND still within its validity window")] = False,
+    drop_revocation: Annotated[bool, typer.Option("--drop-revocation", help="With --force-revoked, also remove the serial from the KRL. DANGEROUS: a copy of the certificate works again")] = False,
+    force: Annotated[bool, typer.Option("--force", "-f", help="Skip confirmation")] = False,
+    output: OutputFormat = "json",
+) -> None:
+    """Purge (hard-delete) an SSH certificate that was issued by mistake.
+
+    This erases the database row; it does not recall copies of the certificate.
+    To take a deployed host or a user out of service, offboard it instead.
+    """
+    if drop_revocation and not force_revoked:
+        print_error("--drop-revocation needs --force-revoked")
+        raise typer.Exit(1)
+    if not force and not typer.confirm(f"Purge SSH certificate {cert_id}? This cannot be undone."):
+        raise typer.Abort()
+    with _api():
+        data = authed(
+            "DELETE",
+            f"/ssh/certs/{cert_id}",
+            params={"force": "true" if force_revoked else None, "dropRevocation": "true" if drop_revocation else None},
+        )
+        print_success("SSH certificate purged")
         _render(data, output)
 
 
