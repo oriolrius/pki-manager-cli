@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 from uuid import UUID
 
 from attrs import define as _attrs_define
@@ -22,6 +22,7 @@ class PostCasResponse201:
         id (UUID | Unset):
         subject (str | Unset):
         serial_number (str | Unset):
+        key_algorithm (None | str | Unset):
         not_before (datetime.datetime | Unset):
         not_after (datetime.datetime | Unset):
         status (PostCasResponse201Status | Unset):
@@ -30,6 +31,7 @@ class PostCasResponse201:
     id: UUID | Unset = UNSET
     subject: str | Unset = UNSET
     serial_number: str | Unset = UNSET
+    key_algorithm: None | str | Unset = UNSET
     not_before: datetime.datetime | Unset = UNSET
     not_after: datetime.datetime | Unset = UNSET
     status: PostCasResponse201Status | Unset = UNSET
@@ -43,6 +45,12 @@ class PostCasResponse201:
         subject = self.subject
 
         serial_number = self.serial_number
+
+        key_algorithm: None | str | Unset
+        if isinstance(self.key_algorithm, Unset):
+            key_algorithm = UNSET
+        else:
+            key_algorithm = self.key_algorithm
 
         not_before: str | Unset = UNSET
         if not isinstance(self.not_before, Unset):
@@ -65,6 +73,8 @@ class PostCasResponse201:
             field_dict["subject"] = subject
         if serial_number is not UNSET:
             field_dict["serialNumber"] = serial_number
+        if key_algorithm is not UNSET:
+            field_dict["keyAlgorithm"] = key_algorithm
         if not_before is not UNSET:
             field_dict["notBefore"] = not_before
         if not_after is not UNSET:
@@ -87,6 +97,15 @@ class PostCasResponse201:
         subject = d.pop("subject", UNSET)
 
         serial_number = d.pop("serialNumber", UNSET)
+
+        def _parse_key_algorithm(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        key_algorithm = _parse_key_algorithm(d.pop("keyAlgorithm", UNSET))
 
         _not_before = d.pop("notBefore", UNSET)
         not_before: datetime.datetime | Unset
@@ -113,6 +132,7 @@ class PostCasResponse201:
             id=id,
             subject=subject,
             serial_number=serial_number,
+            key_algorithm=key_algorithm,
             not_before=not_before,
             not_after=not_after,
             status=status,

@@ -9,6 +9,21 @@ from .bulk_download_certificates_request_format import (
 from .bulk_renew_certificates_request import BulkRenewCertificatesRequest
 from .bulk_revoke_certificates_request import BulkRevokeCertificatesRequest
 from .bulk_revoke_certificates_request_reason import BulkRevokeCertificatesRequestReason
+from .certificate_detail import CertificateDetail
+from .certificate_detail_basic_constraints_type_0 import (
+    CertificateDetailBasicConstraintsType0,
+)
+from .certificate_detail_certificate_type import CertificateDetailCertificateType
+from .certificate_detail_fingerprints import CertificateDetailFingerprints
+from .certificate_detail_issuer import CertificateDetailIssuer
+from .certificate_detail_issuing_ca import CertificateDetailIssuingCA
+from .certificate_detail_key_usage_type_0 import CertificateDetailKeyUsageType0
+from .certificate_detail_renewed_to_type_0_item import (
+    CertificateDetailRenewedToType0Item,
+)
+from .certificate_detail_status import CertificateDetailStatus
+from .certificate_detail_subject import CertificateDetailSubject
+from .certificate_detail_validity_status import CertificateDetailValidityStatus
 from .certificate_status import CertificateStatus
 from .certificate_type import CertificateType
 from .create_ca_request import CreateCaRequest
@@ -81,6 +96,13 @@ from .delete_certificates_id_response_500_error import (
 from .delete_certificates_id_response_500_error_details_item import (
     DeleteCertificatesIdResponse500ErrorDetailsItem,
 )
+from .delete_ssh_certs_id_response_200 import DeleteSshCertsIdResponse200
+from .delete_ssh_certs_id_response_400 import DeleteSshCertsIdResponse400
+from .delete_ssh_certs_id_response_400_error import DeleteSshCertsIdResponse400Error
+from .delete_ssh_certs_id_response_409 import DeleteSshCertsIdResponse409
+from .delete_ssh_certs_id_response_409_error import DeleteSshCertsIdResponse409Error
+from .delete_ssh_certs_id_response_500 import DeleteSshCertsIdResponse500
+from .delete_ssh_certs_id_response_500_error import DeleteSshCertsIdResponse500Error
 from .delete_ssh_principals_id_response_200 import DeleteSshPrincipalsIdResponse200
 from .delete_ssh_principals_id_response_400 import DeleteSshPrincipalsIdResponse400
 from .delete_ssh_principals_id_response_400_error import (
@@ -96,8 +118,20 @@ from .error import Error
 from .error_error import ErrorError
 from .error_error_details_item import ErrorErrorDetailsItem
 from .generate_crl_request import GenerateCrlRequest
+from .generate_report_request import GenerateReportRequest
+from .generate_report_request_format import GenerateReportRequestFormat
+from .generate_report_request_report_type import GenerateReportRequestReportType
 from .get_audit_response_200 import GetAuditResponse200
 from .get_audit_response_200_items_item import GetAuditResponse200ItemsItem
+from .get_audit_response_200_items_item_actor_type_type_1 import (
+    GetAuditResponse200ItemsItemActorTypeType1,
+)
+from .get_audit_response_200_items_item_actor_type_type_2_type_1 import (
+    GetAuditResponse200ItemsItemActorTypeType2Type1,
+)
+from .get_audit_response_200_items_item_actor_type_type_3_type_1 import (
+    GetAuditResponse200ItemsItemActorTypeType3Type1,
+)
 from .get_audit_response_200_items_item_details_type_0 import (
     GetAuditResponse200ItemsItemDetailsType0,
 )
@@ -164,6 +198,11 @@ from .get_cas_id_download_response_400 import GetCasIdDownloadResponse400
 from .get_cas_id_download_response_400_error import GetCasIdDownloadResponse400Error
 from .get_cas_id_download_response_400_error_details_item import (
     GetCasIdDownloadResponse400ErrorDetailsItem,
+)
+from .get_cas_id_download_response_403 import GetCasIdDownloadResponse403
+from .get_cas_id_download_response_403_error import GetCasIdDownloadResponse403Error
+from .get_cas_id_download_response_403_error_details_item import (
+    GetCasIdDownloadResponse403ErrorDetailsItem,
 )
 from .get_cas_id_download_response_404 import GetCasIdDownloadResponse404
 from .get_cas_id_download_response_404_error import GetCasIdDownloadResponse404Error
@@ -321,7 +360,23 @@ from .get_external_ca_bundle_response_404 import GetExternalCaBundleResponse404
 from .get_external_ca_bundle_response_404_error import (
     GetExternalCaBundleResponse404Error,
 )
+from .get_external_ca_bundle_response_409 import GetExternalCaBundleResponse409
+from .get_external_ca_bundle_response_409_error import (
+    GetExternalCaBundleResponse409Error,
+)
+from .get_external_certificate_status_serial_response_200 import (
+    GetExternalCertificateStatusSerialResponse200,
+)
 from .get_external_health_response_200 import GetExternalHealthResponse200
+from .get_external_health_response_200_cluster import (
+    GetExternalHealthResponse200Cluster,
+)
+from .get_external_health_response_200_integration import (
+    GetExternalHealthResponse200Integration,
+)
+from .get_external_health_response_200_integration_kind import (
+    GetExternalHealthResponse200IntegrationKind,
+)
 from .get_external_ssh_hosts_fqdn_auth_principals_response_200 import (
     GetExternalSshHostsFqdnAuthPrincipalsResponse200,
 )
@@ -369,6 +424,21 @@ from .get_ssh_bulk_expiring_response_400 import GetSshBulkExpiringResponse400
 from .get_ssh_bulk_expiring_response_400_error import GetSshBulkExpiringResponse400Error
 from .get_ssh_bulk_expiring_response_500 import GetSshBulkExpiringResponse500
 from .get_ssh_bulk_expiring_response_500_error import GetSshBulkExpiringResponse500Error
+from .get_ssh_cas_ca_id_reissue_report_response_200 import (
+    GetSshCasCaIdReissueReportResponse200,
+)
+from .get_ssh_cas_ca_id_reissue_report_response_400 import (
+    GetSshCasCaIdReissueReportResponse400,
+)
+from .get_ssh_cas_ca_id_reissue_report_response_400_error import (
+    GetSshCasCaIdReissueReportResponse400Error,
+)
+from .get_ssh_cas_ca_id_reissue_report_response_500 import (
+    GetSshCasCaIdReissueReportResponse500,
+)
+from .get_ssh_cas_ca_id_reissue_report_response_500_error import (
+    GetSshCasCaIdReissueReportResponse500Error,
+)
 from .get_ssh_cas_ca_id_response_200 import GetSshCasCaIdResponse200
 from .get_ssh_cas_ca_id_response_400 import GetSshCasCaIdResponse400
 from .get_ssh_cas_ca_id_response_400_error import GetSshCasCaIdResponse400Error
@@ -444,6 +514,21 @@ from .get_ssh_hosts_id_deploy_bundle_response_500 import (
 from .get_ssh_hosts_id_deploy_bundle_response_500_error import (
     GetSshHostsIdDeployBundleResponse500Error,
 )
+from .get_ssh_hosts_id_principal_maps_response_200_item import (
+    GetSshHostsIdPrincipalMapsResponse200Item,
+)
+from .get_ssh_hosts_id_principal_maps_response_400 import (
+    GetSshHostsIdPrincipalMapsResponse400,
+)
+from .get_ssh_hosts_id_principal_maps_response_400_error import (
+    GetSshHostsIdPrincipalMapsResponse400Error,
+)
+from .get_ssh_hosts_id_principal_maps_response_500 import (
+    GetSshHostsIdPrincipalMapsResponse500,
+)
+from .get_ssh_hosts_id_principal_maps_response_500_error import (
+    GetSshHostsIdPrincipalMapsResponse500Error,
+)
 from .get_ssh_hosts_id_response_200 import GetSshHostsIdResponse200
 from .get_ssh_hosts_id_response_400 import GetSshHostsIdResponse400
 from .get_ssh_hosts_id_response_400_error import GetSshHostsIdResponse400Error
@@ -483,6 +568,21 @@ from .get_ssh_identities_id_collisions_response_500 import (
 )
 from .get_ssh_identities_id_collisions_response_500_error import (
     GetSshIdentitiesIdCollisionsResponse500Error,
+)
+from .get_ssh_identities_id_grants_response_200_item import (
+    GetSshIdentitiesIdGrantsResponse200Item,
+)
+from .get_ssh_identities_id_grants_response_400 import (
+    GetSshIdentitiesIdGrantsResponse400,
+)
+from .get_ssh_identities_id_grants_response_400_error import (
+    GetSshIdentitiesIdGrantsResponse400Error,
+)
+from .get_ssh_identities_id_grants_response_500 import (
+    GetSshIdentitiesIdGrantsResponse500,
+)
+from .get_ssh_identities_id_grants_response_500_error import (
+    GetSshIdentitiesIdGrantsResponse500Error,
 )
 from .get_ssh_identities_response_200_item import GetSshIdentitiesResponse200Item
 from .get_ssh_identities_response_400 import GetSshIdentitiesResponse400
@@ -561,26 +661,22 @@ from .get_ssh_zones_response_400_error import GetSshZonesResponse400Error
 from .get_ssh_zones_response_500 import GetSshZonesResponse500
 from .get_ssh_zones_response_500_error import GetSshZonesResponse500Error
 from .key_algorithm import KeyAlgorithm
-from .list_cas_request_type_1 import ListCasRequestType1
-from .list_cas_request_type_1_algorithm import ListCasRequestType1Algorithm
-from .list_cas_request_type_1_sort_by import ListCasRequestType1SortBy
-from .list_cas_request_type_1_sort_order import ListCasRequestType1SortOrder
-from .list_cas_request_type_1_status import ListCasRequestType1Status
-from .list_certificates_request_type_1 import ListCertificatesRequestType1
-from .list_certificates_request_type_1_certificate_type import (
-    ListCertificatesRequestType1CertificateType,
+from .list_audit_log_request import ListAuditLogRequest
+from .list_audit_log_request_status import ListAuditLogRequestStatus
+from .list_cas_request import ListCasRequest
+from .list_cas_request_algorithm import ListCasRequestAlgorithm
+from .list_cas_request_sort_by import ListCasRequestSortBy
+from .list_cas_request_sort_order import ListCasRequestSortOrder
+from .list_cas_request_status import ListCasRequestStatus
+from .list_certificates_request import ListCertificatesRequest
+from .list_certificates_request_certificate_type import (
+    ListCertificatesRequestCertificateType,
 )
-from .list_certificates_request_type_1_expiry_status import (
-    ListCertificatesRequestType1ExpiryStatus,
-)
-from .list_certificates_request_type_1_sort_by import ListCertificatesRequestType1SortBy
-from .list_certificates_request_type_1_sort_order import (
-    ListCertificatesRequestType1SortOrder,
-)
-from .list_certificates_request_type_1_source_type import (
-    ListCertificatesRequestType1SourceType,
-)
-from .list_certificates_request_type_1_status import ListCertificatesRequestType1Status
+from .list_certificates_request_expiry_status import ListCertificatesRequestExpiryStatus
+from .list_certificates_request_sort_by import ListCertificatesRequestSortBy
+from .list_certificates_request_sort_order import ListCertificatesRequestSortOrder
+from .list_certificates_request_source_type import ListCertificatesRequestSourceType
+from .list_certificates_request_status import ListCertificatesRequestStatus
 from .list_crls_request import ListCrlsRequest
 from .pagination import Pagination
 from .post_cas_body import PostCasBody
@@ -838,13 +934,26 @@ from .post_certificates_response_500_error import PostCertificatesResponse500Err
 from .post_certificates_response_500_error_details_item import (
     PostCertificatesResponse500ErrorDetailsItem,
 )
+from .post_external_ra_decrypt_body import PostExternalRaDecryptBody
+from .post_external_ra_provision_body import PostExternalRaProvisionBody
+from .post_external_ra_renew_body import PostExternalRaRenewBody
+from .post_external_ra_sign_body import PostExternalRaSignBody
 from .post_external_revoke_body import PostExternalRevokeBody
 from .post_external_revoke_response_200 import PostExternalRevokeResponse200
+from .post_external_revoke_response_200_status import (
+    PostExternalRevokeResponse200Status,
+)
 from .post_external_sign_body import PostExternalSignBody
 from .post_external_sign_body_certificate_type import (
     PostExternalSignBodyCertificateType,
 )
 from .post_external_sign_response_200 import PostExternalSignResponse200
+from .post_external_ssh_hosts_fqdn_principals_pushed_body import (
+    PostExternalSshHostsFqdnPrincipalsPushedBody,
+)
+from .post_external_ssh_hosts_fqdn_principals_pushed_response_200 import (
+    PostExternalSshHostsFqdnPrincipalsPushedResponse200,
+)
 from .post_external_ssh_krl_body import PostExternalSshKrlBody
 from .post_external_ssh_register_host_pubkey_body import (
     PostExternalSshRegisterHostPubkeyBody,
@@ -1112,6 +1221,32 @@ from .post_ssh_principals_response_400 import PostSshPrincipalsResponse400
 from .post_ssh_principals_response_400_error import PostSshPrincipalsResponse400Error
 from .post_ssh_principals_response_500 import PostSshPrincipalsResponse500
 from .post_ssh_principals_response_500_error import PostSshPrincipalsResponse500Error
+from .post_ssh_principals_revoke_grant_body import PostSshPrincipalsRevokeGrantBody
+from .post_ssh_principals_revoke_grant_response_200 import (
+    PostSshPrincipalsRevokeGrantResponse200,
+)
+from .post_ssh_principals_revoke_grant_response_400 import (
+    PostSshPrincipalsRevokeGrantResponse400,
+)
+from .post_ssh_principals_revoke_grant_response_400_error import (
+    PostSshPrincipalsRevokeGrantResponse400Error,
+)
+from .post_ssh_principals_revoke_grant_response_500 import (
+    PostSshPrincipalsRevokeGrantResponse500,
+)
+from .post_ssh_principals_revoke_grant_response_500_error import (
+    PostSshPrincipalsRevokeGrantResponse500Error,
+)
+from .post_ssh_principals_unmap_body import PostSshPrincipalsUnmapBody
+from .post_ssh_principals_unmap_response_200 import PostSshPrincipalsUnmapResponse200
+from .post_ssh_principals_unmap_response_400 import PostSshPrincipalsUnmapResponse400
+from .post_ssh_principals_unmap_response_400_error import (
+    PostSshPrincipalsUnmapResponse400Error,
+)
+from .post_ssh_principals_unmap_response_500 import PostSshPrincipalsUnmapResponse500
+from .post_ssh_principals_unmap_response_500_error import (
+    PostSshPrincipalsUnmapResponse500Error,
+)
 from .post_ssh_tokens_body import PostSshTokensBody
 from .post_ssh_tokens_body_op_set_item import PostSshTokensBodyOpSetItem
 from .post_ssh_tokens_id_revoke_response_200 import PostSshTokensIdRevokeResponse200
@@ -1190,6 +1325,17 @@ __all__ = (
     "BulkRenewCertificatesRequest",
     "BulkRevokeCertificatesRequest",
     "BulkRevokeCertificatesRequestReason",
+    "CertificateDetail",
+    "CertificateDetailBasicConstraintsType0",
+    "CertificateDetailCertificateType",
+    "CertificateDetailFingerprints",
+    "CertificateDetailIssuer",
+    "CertificateDetailIssuingCA",
+    "CertificateDetailKeyUsageType0",
+    "CertificateDetailRenewedToType0Item",
+    "CertificateDetailStatus",
+    "CertificateDetailSubject",
+    "CertificateDetailValidityStatus",
     "CertificateStatus",
     "CertificateType",
     "CreateCaRequest",
@@ -1230,6 +1376,13 @@ __all__ = (
     "DeleteCertificatesIdResponse500",
     "DeleteCertificatesIdResponse500Error",
     "DeleteCertificatesIdResponse500ErrorDetailsItem",
+    "DeleteSshCertsIdResponse200",
+    "DeleteSshCertsIdResponse400",
+    "DeleteSshCertsIdResponse400Error",
+    "DeleteSshCertsIdResponse409",
+    "DeleteSshCertsIdResponse409Error",
+    "DeleteSshCertsIdResponse500",
+    "DeleteSshCertsIdResponse500Error",
     "DeleteSshPrincipalsIdResponse200",
     "DeleteSshPrincipalsIdResponse400",
     "DeleteSshPrincipalsIdResponse400Error",
@@ -1241,8 +1394,14 @@ __all__ = (
     "ErrorError",
     "ErrorErrorDetailsItem",
     "GenerateCrlRequest",
+    "GenerateReportRequest",
+    "GenerateReportRequestFormat",
+    "GenerateReportRequestReportType",
     "GetAuditResponse200",
     "GetAuditResponse200ItemsItem",
+    "GetAuditResponse200ItemsItemActorTypeType1",
+    "GetAuditResponse200ItemsItemActorTypeType2Type1",
+    "GetAuditResponse200ItemsItemActorTypeType3Type1",
     "GetAuditResponse200ItemsItemDetailsType0",
     "GetAuditResponse200ItemsItemStatus",
     "GetAuditResponse200Pagination",
@@ -1280,6 +1439,9 @@ __all__ = (
     "GetCasIdDownloadResponse400",
     "GetCasIdDownloadResponse400Error",
     "GetCasIdDownloadResponse400ErrorDetailsItem",
+    "GetCasIdDownloadResponse403",
+    "GetCasIdDownloadResponse403Error",
+    "GetCasIdDownloadResponse403ErrorDetailsItem",
     "GetCasIdDownloadResponse404",
     "GetCasIdDownloadResponse404Error",
     "GetCasIdDownloadResponse404ErrorDetailsItem",
@@ -1364,7 +1526,13 @@ __all__ = (
     "GetExternalCaBundleResponse200",
     "GetExternalCaBundleResponse404",
     "GetExternalCaBundleResponse404Error",
+    "GetExternalCaBundleResponse409",
+    "GetExternalCaBundleResponse409Error",
+    "GetExternalCertificateStatusSerialResponse200",
     "GetExternalHealthResponse200",
+    "GetExternalHealthResponse200Cluster",
+    "GetExternalHealthResponse200Integration",
+    "GetExternalHealthResponse200IntegrationKind",
     "GetExternalSshHostsFqdnAuthPrincipalsResponse200",
     "GetHealthResponse200",
     "GetHealthResponse200Status",
@@ -1392,6 +1560,11 @@ __all__ = (
     "GetSshBulkExpiringResponse400Error",
     "GetSshBulkExpiringResponse500",
     "GetSshBulkExpiringResponse500Error",
+    "GetSshCasCaIdReissueReportResponse200",
+    "GetSshCasCaIdReissueReportResponse400",
+    "GetSshCasCaIdReissueReportResponse400Error",
+    "GetSshCasCaIdReissueReportResponse500",
+    "GetSshCasCaIdReissueReportResponse500Error",
     "GetSshCasCaIdResponse200",
     "GetSshCasCaIdResponse400",
     "GetSshCasCaIdResponse400Error",
@@ -1427,6 +1600,11 @@ __all__ = (
     "GetSshHostsIdDeployBundleResponse400Error",
     "GetSshHostsIdDeployBundleResponse500",
     "GetSshHostsIdDeployBundleResponse500Error",
+    "GetSshHostsIdPrincipalMapsResponse200Item",
+    "GetSshHostsIdPrincipalMapsResponse400",
+    "GetSshHostsIdPrincipalMapsResponse400Error",
+    "GetSshHostsIdPrincipalMapsResponse500",
+    "GetSshHostsIdPrincipalMapsResponse500Error",
     "GetSshHostsIdResponse200",
     "GetSshHostsIdResponse400",
     "GetSshHostsIdResponse400Error",
@@ -1447,6 +1625,11 @@ __all__ = (
     "GetSshIdentitiesIdCollisionsResponse400Error",
     "GetSshIdentitiesIdCollisionsResponse500",
     "GetSshIdentitiesIdCollisionsResponse500Error",
+    "GetSshIdentitiesIdGrantsResponse200Item",
+    "GetSshIdentitiesIdGrantsResponse400",
+    "GetSshIdentitiesIdGrantsResponse400Error",
+    "GetSshIdentitiesIdGrantsResponse500",
+    "GetSshIdentitiesIdGrantsResponse500Error",
     "GetSshIdentitiesResponse200Item",
     "GetSshIdentitiesResponse400",
     "GetSshIdentitiesResponse400Error",
@@ -1498,18 +1681,20 @@ __all__ = (
     "GetSshZonesResponse500",
     "GetSshZonesResponse500Error",
     "KeyAlgorithm",
-    "ListCasRequestType1",
-    "ListCasRequestType1Algorithm",
-    "ListCasRequestType1SortBy",
-    "ListCasRequestType1SortOrder",
-    "ListCasRequestType1Status",
-    "ListCertificatesRequestType1",
-    "ListCertificatesRequestType1CertificateType",
-    "ListCertificatesRequestType1ExpiryStatus",
-    "ListCertificatesRequestType1SortBy",
-    "ListCertificatesRequestType1SortOrder",
-    "ListCertificatesRequestType1SourceType",
-    "ListCertificatesRequestType1Status",
+    "ListAuditLogRequest",
+    "ListAuditLogRequestStatus",
+    "ListCasRequest",
+    "ListCasRequestAlgorithm",
+    "ListCasRequestSortBy",
+    "ListCasRequestSortOrder",
+    "ListCasRequestStatus",
+    "ListCertificatesRequest",
+    "ListCertificatesRequestCertificateType",
+    "ListCertificatesRequestExpiryStatus",
+    "ListCertificatesRequestSortBy",
+    "ListCertificatesRequestSortOrder",
+    "ListCertificatesRequestSourceType",
+    "ListCertificatesRequestStatus",
     "ListCrlsRequest",
     "Pagination",
     "PostCasBody",
@@ -1633,11 +1818,18 @@ __all__ = (
     "PostCertificatesResponse500",
     "PostCertificatesResponse500Error",
     "PostCertificatesResponse500ErrorDetailsItem",
+    "PostExternalRaDecryptBody",
+    "PostExternalRaProvisionBody",
+    "PostExternalRaRenewBody",
+    "PostExternalRaSignBody",
     "PostExternalRevokeBody",
     "PostExternalRevokeResponse200",
+    "PostExternalRevokeResponse200Status",
     "PostExternalSignBody",
     "PostExternalSignBodyCertificateType",
     "PostExternalSignResponse200",
+    "PostExternalSshHostsFqdnPrincipalsPushedBody",
+    "PostExternalSshHostsFqdnPrincipalsPushedResponse200",
     "PostExternalSshKrlBody",
     "PostExternalSshRegisterHostPubkeyBody",
     "PostExternalSshRegisterHostPubkeyResponse200",
@@ -1805,6 +1997,18 @@ __all__ = (
     "PostSshPrincipalsResponse400Error",
     "PostSshPrincipalsResponse500",
     "PostSshPrincipalsResponse500Error",
+    "PostSshPrincipalsRevokeGrantBody",
+    "PostSshPrincipalsRevokeGrantResponse200",
+    "PostSshPrincipalsRevokeGrantResponse400",
+    "PostSshPrincipalsRevokeGrantResponse400Error",
+    "PostSshPrincipalsRevokeGrantResponse500",
+    "PostSshPrincipalsRevokeGrantResponse500Error",
+    "PostSshPrincipalsUnmapBody",
+    "PostSshPrincipalsUnmapResponse200",
+    "PostSshPrincipalsUnmapResponse400",
+    "PostSshPrincipalsUnmapResponse400Error",
+    "PostSshPrincipalsUnmapResponse500",
+    "PostSshPrincipalsUnmapResponse500Error",
     "PostSshTokensBody",
     "PostSshTokensBodyOpSetItem",
     "PostSshTokensIdRevokeResponse200",

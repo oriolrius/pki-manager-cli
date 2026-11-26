@@ -20,18 +20,22 @@ from typing import Any, Optional
 
 import httpx
 
-from .client import get_client
+from .client import get_client, rate_limit_httpx_args
 from .config import get_settings
+from .ratelimit import ApiError, RateLimitedError
+
+__all__ = [
+    "ApiError",
+    "RateLimitedError",
+    "authed",
+    "public",
+    "raise_on_error",
+    "read_value_or_file",
+    "token_call",
+    "unwrap",
+]
 
 DEFAULT_TIMEOUT = 30.0
-
-
-class ApiError(Exception):
-    """A non-2xx API response, carrying the parsed status + message."""
-
-    def __init__(self, status: int, message: str) -> None:
-        self.status = status
-        super().__init__(message)
 
 
 def _clean(params: Optional[dict]) -> Optional[dict]:
@@ -66,6 +70,11 @@ def _handle(resp: httpx.Response, *, expect_bytes: bool) -> Any:
     if "application/json" in ctype:
         return resp.json()
     return resp.text
+
+
+def _client(base_url: str) -> httpx.Client:
+    """A one-shot client with the shared HTTP 429 handling."""
+    return httpx.Client(base_url=base_url, timeout=DEFAULT_TIMEOUT, **rate_limit_httpx_args())
 
 
 def _api_url() -> str:
@@ -110,7 +119,7 @@ def token_call(
         h["Authorization"] = f"Bearer {token}"
     if headers:
         h.update({k: v for k, v in headers.items() if v is not None})
-    with httpx.Client(base_url=_api_url(), timeout=DEFAULT_TIMEOUT) as client:
+    with _client(_api_url()) as client:
         resp = client.request(method, path, json=json, params=_clean(params), headers=h)
     return _handle(resp, expect_bytes=expect_bytes)
 
@@ -128,7 +137,7 @@ def public(
     mounted outside the ``/api/v1`` prefix, so strip it from the base URL.
     """
     root = _api_url().replace("/api/v1", "")
-    with httpx.Client(base_url=root, timeout=DEFAULT_TIMEOUT) as client:
+    with _client(root) as client:
         resp = client.request(method, path, params=_clean(params))
     # These trust-material routes live at the backend root; some deployments serve
     # a web app there and shadow them, returning index.html. Fail clearly instead
@@ -153,12 +162,28 @@ def unwrap(result: Any, *, what: str) -> Any:
     """
     if result is None:
         raise ApiError(0, f"{what} failed (no response body)")
-    error = getattr(result, "error", None)
-    if error is not None:
-        code = getattr(error, "code", "ERROR")
-        message = getattr(error, "message", str(error))
-        raise ApiError(0, f"{code}: {message}")
+    raise_on_error(result)
     return result
+
+
+def raise_on_error(result: Any) -> None:
+    """Raise :class:`ApiError` when a generated-client result is the API's error shape.
+
+    For commands that handle a ``None`` result themselves. Without this check a
+    documented 4xx (for example the 400 of a rejected SAN value) is parsed into
+    an error model, and the command fails on a missing attribute instead of
+    showing the server's message.
+    """
+    error = getattr(result, "error", None)
+    if error is None:
+        return
+    code = getattr(error, "code", "ERROR")
+    message = getattr(error, "message", str(error))
+    if not isinstance(code, str):
+        code = "ERROR"
+    if not isinstance(message, str):
+        message = str(error)
+    raise ApiError(0, f"{code}: {message}")
 
 
 def read_value_or_file(value: Optional[str]) -> Optional[str]:

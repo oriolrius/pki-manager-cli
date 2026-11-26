@@ -8,6 +8,15 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
+from ..models.get_audit_response_200_items_item_actor_type_type_1 import (
+    GetAuditResponse200ItemsItemActorTypeType1,
+)
+from ..models.get_audit_response_200_items_item_actor_type_type_2_type_1 import (
+    GetAuditResponse200ItemsItemActorTypeType2Type1,
+)
+from ..models.get_audit_response_200_items_item_actor_type_type_3_type_1 import (
+    GetAuditResponse200ItemsItemActorTypeType3Type1,
+)
 from ..models.get_audit_response_200_items_item_status import (
     GetAuditResponse200ItemsItemStatus,
 )
@@ -34,6 +43,12 @@ class GetAuditResponse200ItemsItem:
         ip_address (None | str | Unset):
         status (GetAuditResponse200ItemsItemStatus | Unset):
         details (GetAuditResponse200ItemsItemDetailsType0 | None | Unset):
+        actor_type (GetAuditResponse200ItemsItemActorTypeType1 | GetAuditResponse200ItemsItemActorTypeType2Type1 |
+            GetAuditResponse200ItemsItemActorTypeType3Type1 | None | Unset): Kind of caller that did the action; null for
+            rows written before actors were recorded
+        actor_id (None | str | Unset): OIDC subject, integration id or SSH fleet token id
+        actor_name (None | str | Unset): Readable name: preferred_username/email, integration name, token name or
+            anonymous
     """
 
     id: str | Unset = UNSET
@@ -44,6 +59,15 @@ class GetAuditResponse200ItemsItem:
     ip_address: None | str | Unset = UNSET
     status: GetAuditResponse200ItemsItemStatus | Unset = UNSET
     details: GetAuditResponse200ItemsItemDetailsType0 | None | Unset = UNSET
+    actor_type: (
+        GetAuditResponse200ItemsItemActorTypeType1
+        | GetAuditResponse200ItemsItemActorTypeType2Type1
+        | GetAuditResponse200ItemsItemActorTypeType3Type1
+        | None
+        | Unset
+    ) = UNSET
+    actor_id: None | str | Unset = UNSET
+    actor_name: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -85,6 +109,34 @@ class GetAuditResponse200ItemsItem:
         else:
             details = self.details
 
+        actor_type: None | str | Unset
+        if isinstance(self.actor_type, Unset):
+            actor_type = UNSET
+        elif isinstance(self.actor_type, GetAuditResponse200ItemsItemActorTypeType1):
+            actor_type = self.actor_type.value
+        elif isinstance(
+            self.actor_type, GetAuditResponse200ItemsItemActorTypeType2Type1
+        ):
+            actor_type = self.actor_type.value
+        elif isinstance(
+            self.actor_type, GetAuditResponse200ItemsItemActorTypeType3Type1
+        ):
+            actor_type = self.actor_type.value
+        else:
+            actor_type = self.actor_type
+
+        actor_id: None | str | Unset
+        if isinstance(self.actor_id, Unset):
+            actor_id = UNSET
+        else:
+            actor_id = self.actor_id
+
+        actor_name: None | str | Unset
+        if isinstance(self.actor_name, Unset):
+            actor_name = UNSET
+        else:
+            actor_name = self.actor_name
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -104,6 +156,12 @@ class GetAuditResponse200ItemsItem:
             field_dict["status"] = status
         if details is not UNSET:
             field_dict["details"] = details
+        if actor_type is not UNSET:
+            field_dict["actorType"] = actor_type
+        if actor_id is not UNSET:
+            field_dict["actorId"] = actor_id
+        if actor_name is not UNSET:
+            field_dict["actorName"] = actor_name
 
         return field_dict
 
@@ -173,6 +231,76 @@ class GetAuditResponse200ItemsItem:
 
         details = _parse_details(d.pop("details", UNSET))
 
+        def _parse_actor_type(
+            data: object,
+        ) -> (
+            GetAuditResponse200ItemsItemActorTypeType1
+            | GetAuditResponse200ItemsItemActorTypeType2Type1
+            | GetAuditResponse200ItemsItemActorTypeType3Type1
+            | None
+            | Unset
+        ):
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                actor_type_type_1 = GetAuditResponse200ItemsItemActorTypeType1(data)
+
+                return actor_type_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                actor_type_type_2_type_1 = (
+                    GetAuditResponse200ItemsItemActorTypeType2Type1(data)
+                )
+
+                return actor_type_type_2_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                actor_type_type_3_type_1 = (
+                    GetAuditResponse200ItemsItemActorTypeType3Type1(data)
+                )
+
+                return actor_type_type_3_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(
+                GetAuditResponse200ItemsItemActorTypeType1
+                | GetAuditResponse200ItemsItemActorTypeType2Type1
+                | GetAuditResponse200ItemsItemActorTypeType3Type1
+                | None
+                | Unset,
+                data,
+            )
+
+        actor_type = _parse_actor_type(d.pop("actorType", UNSET))
+
+        def _parse_actor_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        actor_id = _parse_actor_id(d.pop("actorId", UNSET))
+
+        def _parse_actor_name(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        actor_name = _parse_actor_name(d.pop("actorName", UNSET))
+
         get_audit_response_200_items_item = cls(
             id=id,
             timestamp=timestamp,
@@ -182,6 +310,9 @@ class GetAuditResponse200ItemsItem:
             ip_address=ip_address,
             status=status,
             details=details,
+            actor_type=actor_type,
+            actor_id=actor_id,
+            actor_name=actor_name,
         )
 
         get_audit_response_200_items_item.additional_properties = d

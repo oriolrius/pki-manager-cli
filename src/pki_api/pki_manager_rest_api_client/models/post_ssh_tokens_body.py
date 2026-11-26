@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,6 +21,8 @@ class PostSshTokensBody:
         user_ca_id (str | Unset):
         host_ca_id (str | Unset):
         zone (str | Unset):
+        allowed_principals (list[str] | Unset):
+        max_valid_for_seconds (int | Unset):
     """
 
     name: str
@@ -28,6 +30,8 @@ class PostSshTokensBody:
     user_ca_id: str | Unset = UNSET
     host_ca_id: str | Unset = UNSET
     zone: str | Unset = UNSET
+    allowed_principals: list[str] | Unset = UNSET
+    max_valid_for_seconds: int | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -44,6 +48,12 @@ class PostSshTokensBody:
 
         zone = self.zone
 
+        allowed_principals: list[str] | Unset = UNSET
+        if not isinstance(self.allowed_principals, Unset):
+            allowed_principals = self.allowed_principals
+
+        max_valid_for_seconds = self.max_valid_for_seconds
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -58,6 +68,10 @@ class PostSshTokensBody:
             field_dict["hostCaId"] = host_ca_id
         if zone is not UNSET:
             field_dict["zone"] = zone
+        if allowed_principals is not UNSET:
+            field_dict["allowedPrincipals"] = allowed_principals
+        if max_valid_for_seconds is not UNSET:
+            field_dict["maxValidForSeconds"] = max_valid_for_seconds
 
         return field_dict
 
@@ -79,12 +93,18 @@ class PostSshTokensBody:
 
         zone = d.pop("zone", UNSET)
 
+        allowed_principals = cast(list[str], d.pop("allowedPrincipals", UNSET))
+
+        max_valid_for_seconds = d.pop("maxValidForSeconds", UNSET)
+
         post_ssh_tokens_body = cls(
             name=name,
             op_set=op_set,
             user_ca_id=user_ca_id,
             host_ca_id=host_ca_id,
             zone=zone,
+            allowed_principals=allowed_principals,
+            max_valid_for_seconds=max_valid_for_seconds,
         )
 
         post_ssh_tokens_body.additional_properties = d

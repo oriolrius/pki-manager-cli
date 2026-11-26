@@ -69,7 +69,7 @@ from .client import get_client, reset_wrapper
 from .config import configure
 from .crl import crl_app
 from .external import external_app
-from .http import public, unwrap
+from .http import public, raise_on_error, unwrap
 from .output import (
     print_ca_detail,
     print_ca_table,
@@ -164,6 +164,15 @@ def main(
         Optional[str],
         typer.Option("--token", envvar="PKI_TOKEN", help="Pre-obtained bearer token (skips the OIDC exchange)"),
     ] = None,
+    rate_limit_retries: Annotated[
+        Optional[int],
+        typer.Option(
+            "--rate-limit-retries",
+            envvar="PKI_RATE_LIMIT_RETRIES",
+            min=0,
+            help="On HTTP 429, wait for Retry-After and retry this many times (default 0: fail at once)",
+        ),
+    ] = None,
 ) -> None:
     """PKI Manager CLI - Manage X.509 certificates.
 
@@ -183,6 +192,7 @@ def main(
         client_id=client_id,
         client_secret=client_secret,
         token=token,
+        rate_limit_retries=rate_limit_retries,
     )
     reset_wrapper()
 
@@ -215,6 +225,7 @@ def ca_list(
             offset=offset,
         )
 
+        raise_on_error(result)
         if result is None:
             print_error("Failed to fetch CAs")
             raise typer.Exit(1)
@@ -245,6 +256,7 @@ def ca_get(
         client = get_client()
         result = get_cas_id.sync(client=client, id=ca_id)
 
+        raise_on_error(result)
         if result is None:
             print_error(f"CA {ca_id} not found")
             raise typer.Exit(1)
@@ -293,6 +305,7 @@ def ca_create(
 
         result = post_cas.sync(client=client, body=body)
 
+        raise_on_error(result)
         if result is None:
             print_error("Failed to create CA")
             raise typer.Exit(1)
@@ -328,6 +341,7 @@ def ca_revoke(
         )
         result = post_cas_id_revoke.sync(client=client, id=ca_id, body=body)
 
+        raise_on_error(result)
         if result is None:
             print_error(f"Failed to revoke CA {ca_id}")
             raise typer.Exit(1)
@@ -437,7 +451,7 @@ def ca_download(
                 UUID(ca_id),
                 client=get_client(),
                 format_=GetCasIdDownloadFormat(format),
-                password=password if password else UNSET,
+                x_export_password=password if password else UNSET,
             ),
             what="CA download",
         )
@@ -519,6 +533,7 @@ def cert_list(
             offset=offset,
         )
 
+        raise_on_error(result)
         if result is None:
             print_error("Failed to fetch certificates")
             raise typer.Exit(1)
@@ -549,6 +564,7 @@ def cert_get(
         client = get_client()
         result = get_certificates_id.sync(client=client, id=cert_id)
 
+        raise_on_error(result)
         if result is None:
             print_error(f"Certificate {cert_id} not found")
             raise typer.Exit(1)
@@ -614,6 +630,7 @@ def cert_issue(
 
         result = post_certificates.sync(client=client, body=body)
 
+        raise_on_error(result)
         if result is None:
             print_error("Failed to issue certificate")
             raise typer.Exit(1)
@@ -675,6 +692,7 @@ def cert_renew(
         )
         result = post_certificates_id_renew.sync(client=client, id=cert_id, body=body)
 
+        raise_on_error(result)
         if result is None:
             print_error(f"Failed to renew certificate {cert_id}")
             raise typer.Exit(1)
@@ -714,6 +732,7 @@ def cert_revoke(
         )
         result = post_certificates_id_revoke.sync(client=client, id=cert_id, body=body)
 
+        raise_on_error(result)
         if result is None:
             print_error(f"Failed to revoke certificate {cert_id}")
             raise typer.Exit(1)
@@ -808,7 +827,7 @@ def cert_download(
                 client=client,
                 id=cert_id,
                 format_=format_enum,
-                password=password if password else UNSET,
+                x_export_password=password if password else UNSET,
                 encrypt_private_key=encrypt_key,
                 include_chain=not no_chain,
             ),
@@ -846,6 +865,7 @@ def stats(output: OutputFormat = "table") -> None:
         client = get_client()
         result = get_dashboard_stats.sync(client=client)
 
+        raise_on_error(result)
         if result is None:
             print_error("Failed to fetch statistics")
             raise typer.Exit(1)
@@ -869,6 +889,7 @@ def expiring(
         client = get_client()
         result = get_dashboard_expiring.sync(client=client, limit=limit)
 
+        raise_on_error(result)
         if result is None:
             print_error("Failed to fetch expiring certificates")
             raise typer.Exit(1)
@@ -902,6 +923,7 @@ def search(
         client = get_client()
         result = get_search.sync(client=client, query=query, limit=limit)
 
+        raise_on_error(result)
         if result is None:
             print_error("Failed to search")
             raise typer.Exit(1)

@@ -18,7 +18,7 @@ class GetHealthResponse200:
     """
     Attributes:
         status (GetHealthResponse200Status): API health status
-        version (str): API version
+        version (str): PKI Manager release version
         timestamp (datetime.datetime): Current server timestamp
     """
 

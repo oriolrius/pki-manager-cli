@@ -32,7 +32,11 @@ def _get_kwargs(
     password: str | Unset = UNSET,
     encrypt_private_key: bool | Unset = False,
     include_chain: bool | Unset = True,
+    x_export_password: str | Unset = UNSET,
 ) -> dict[str, Any]:
+    headers: dict[str, Any] = {}
+    if not isinstance(x_export_password, Unset):
+        headers["x-export-password"] = x_export_password
 
     params: dict[str, Any] = {}
 
@@ -55,6 +59,7 @@ def _get_kwargs(
         "params": params,
     }
 
+    _kwargs["headers"] = headers
     return _kwargs
 
 
@@ -117,6 +122,7 @@ def sync_detailed(
     password: str | Unset = UNSET,
     encrypt_private_key: bool | Unset = False,
     include_chain: bool | Unset = True,
+    x_export_password: str | Unset = UNSET,
 ) -> Response[
     GetCertificatesIdDownloadResponse200
     | GetCertificatesIdDownloadResponse400
@@ -131,6 +137,7 @@ def sync_detailed(
         password (str | Unset):
         encrypt_private_key (bool | Unset):  Default: False.
         include_chain (bool | Unset):  Default: True.
+        x_export_password (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -146,6 +153,7 @@ def sync_detailed(
         password=password,
         encrypt_private_key=encrypt_private_key,
         include_chain=include_chain,
+        x_export_password=x_export_password,
     )
 
     response = client.get_httpx_client().request(
@@ -163,6 +171,7 @@ def sync(
     password: str | Unset = UNSET,
     encrypt_private_key: bool | Unset = False,
     include_chain: bool | Unset = True,
+    x_export_password: str | Unset = UNSET,
 ) -> (
     GetCertificatesIdDownloadResponse200
     | GetCertificatesIdDownloadResponse400
@@ -178,6 +187,7 @@ def sync(
         password (str | Unset):
         encrypt_private_key (bool | Unset):  Default: False.
         include_chain (bool | Unset):  Default: True.
+        x_export_password (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -194,6 +204,7 @@ def sync(
         password=password,
         encrypt_private_key=encrypt_private_key,
         include_chain=include_chain,
+        x_export_password=x_export_password,
     ).parsed
 
 
@@ -205,6 +216,7 @@ async def asyncio_detailed(
     password: str | Unset = UNSET,
     encrypt_private_key: bool | Unset = False,
     include_chain: bool | Unset = True,
+    x_export_password: str | Unset = UNSET,
 ) -> Response[
     GetCertificatesIdDownloadResponse200
     | GetCertificatesIdDownloadResponse400
@@ -219,6 +231,7 @@ async def asyncio_detailed(
         password (str | Unset):
         encrypt_private_key (bool | Unset):  Default: False.
         include_chain (bool | Unset):  Default: True.
+        x_export_password (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -234,6 +247,7 @@ async def asyncio_detailed(
         password=password,
         encrypt_private_key=encrypt_private_key,
         include_chain=include_chain,
+        x_export_password=x_export_password,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -249,6 +263,7 @@ async def asyncio(
     password: str | Unset = UNSET,
     encrypt_private_key: bool | Unset = False,
     include_chain: bool | Unset = True,
+    x_export_password: str | Unset = UNSET,
 ) -> (
     GetCertificatesIdDownloadResponse200
     | GetCertificatesIdDownloadResponse400
@@ -264,6 +279,7 @@ async def asyncio(
         password (str | Unset):
         encrypt_private_key (bool | Unset):  Default: False.
         include_chain (bool | Unset):  Default: True.
+        x_export_password (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -281,5 +297,6 @@ async def asyncio(
             password=password,
             encrypt_private_key=encrypt_private_key,
             include_chain=include_chain,
+            x_export_password=x_export_password,
         )
     ).parsed

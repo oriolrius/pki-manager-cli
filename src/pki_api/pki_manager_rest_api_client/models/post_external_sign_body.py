@@ -19,18 +19,21 @@ class PostExternalSignBody:
     """
     Attributes:
         csr_pem (str): PEM-encoded PKCS#10 CSR to sign
-        request_uid (str): Idempotency key; repeat calls for the same uid return the cached certificate
-        duration_days (float | Unset): Requested validity in days (clamped server-side to 1..825; default 90)
-        certificate_type (PostExternalSignBodyCertificateType | Unset):
+        request_uid (str): Idempotency key scoped to this integration and CA. A retry returns the active cached
+            certificate; revoked or expired cached certificates return 409.
+        duration_days (int | Unset): Requested validity in days (1 to 825; default 90). A value out of this range is
+            rejected with 400.
+        certificate_type (PostExternalSignBodyCertificateType | Unset): Metadata hint only. Key usage and extended key
+            usage are taken from the signed CSR.
         k_8_s_namespace (str | Unset):
         k_8_s_resource (str | Unset):
-        san_dns (list[str] | Unset):
-        san_ip (list[str] | Unset):
+        san_dns (list[str] | Unset): Ignored compatibility field. SAN identities must be included in the signed CSR.
+        san_ip (list[str] | Unset): Ignored compatibility field. IP identities must be included in the signed CSR.
     """
 
     csr_pem: str
     request_uid: str
-    duration_days: float | Unset = UNSET
+    duration_days: int | Unset = UNSET
     certificate_type: PostExternalSignBodyCertificateType | Unset = UNSET
     k_8_s_namespace: str | Unset = UNSET
     k_8_s_resource: str | Unset = UNSET

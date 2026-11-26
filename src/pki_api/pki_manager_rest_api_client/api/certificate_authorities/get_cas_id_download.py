@@ -10,6 +10,7 @@ from ...client import AuthenticatedClient, Client
 from ...models.get_cas_id_download_format import GetCasIdDownloadFormat
 from ...models.get_cas_id_download_response_200 import GetCasIdDownloadResponse200
 from ...models.get_cas_id_download_response_400 import GetCasIdDownloadResponse400
+from ...models.get_cas_id_download_response_403 import GetCasIdDownloadResponse403
 from ...models.get_cas_id_download_response_404 import GetCasIdDownloadResponse404
 from ...models.get_cas_id_download_response_500 import GetCasIdDownloadResponse500
 from ...types import UNSET, Response, Unset
@@ -20,7 +21,11 @@ def _get_kwargs(
     *,
     format_: GetCasIdDownloadFormat,
     password: str | Unset = UNSET,
+    x_export_password: str | Unset = UNSET,
 ) -> dict[str, Any]:
+    headers: dict[str, Any] = {}
+    if not isinstance(x_export_password, Unset):
+        headers["x-export-password"] = x_export_password
 
     params: dict[str, Any] = {}
 
@@ -39,6 +44,7 @@ def _get_kwargs(
         "params": params,
     }
 
+    _kwargs["headers"] = headers
     return _kwargs
 
 
@@ -47,6 +53,7 @@ def _parse_response(
 ) -> (
     GetCasIdDownloadResponse200
     | GetCasIdDownloadResponse400
+    | GetCasIdDownloadResponse403
     | GetCasIdDownloadResponse404
     | GetCasIdDownloadResponse500
     | None
@@ -60,6 +67,11 @@ def _parse_response(
         response_400 = GetCasIdDownloadResponse400.from_dict(response.json())
 
         return response_400
+
+    if response.status_code == 403:
+        response_403 = GetCasIdDownloadResponse403.from_dict(response.json())
+
+        return response_403
 
     if response.status_code == 404:
         response_404 = GetCasIdDownloadResponse404.from_dict(response.json())
@@ -82,6 +94,7 @@ def _build_response(
 ) -> Response[
     GetCasIdDownloadResponse200
     | GetCasIdDownloadResponse400
+    | GetCasIdDownloadResponse403
     | GetCasIdDownloadResponse404
     | GetCasIdDownloadResponse500
 ]:
@@ -99,9 +112,11 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     format_: GetCasIdDownloadFormat,
     password: str | Unset = UNSET,
+    x_export_password: str | Unset = UNSET,
 ) -> Response[
     GetCasIdDownloadResponse200
     | GetCasIdDownloadResponse400
+    | GetCasIdDownloadResponse403
     | GetCasIdDownloadResponse404
     | GetCasIdDownloadResponse500
 ]:
@@ -121,26 +136,30 @@ def sync_detailed(
     - `p12-keystore` - PKCS#12 keystore with CA certificate and private key
     - `jks-keystore` - Java KeyStore with CA certificate and private key
 
-    **Security Note:** Keystore formats expose the CA's private key. Only use these for CA operations
-    that require signing capability (e.g., offline CA scenarios).
+    **Security Note:** Keystore formats expose the CA's private key. They are refused with `403
+    CA_KEY_EXPORT_DISABLED` unless the server runs with `ALLOW_CA_KEY_EXPORT=true`. When enabled, only
+    the `admin` role may use them (`403 CA_KEY_EXPORT_ADMIN_REQUIRED` otherwise) and every attempt is
+    written to the audit log as `ca.export_private_key`.
 
     Args:
         id (UUID):
         format_ (GetCasIdDownloadFormat):
         password (str | Unset):
+        x_export_password (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[GetCasIdDownloadResponse200 | GetCasIdDownloadResponse400 | GetCasIdDownloadResponse404 | GetCasIdDownloadResponse500]
+        Response[GetCasIdDownloadResponse200 | GetCasIdDownloadResponse400 | GetCasIdDownloadResponse403 | GetCasIdDownloadResponse404 | GetCasIdDownloadResponse500]
     """
 
     kwargs = _get_kwargs(
         id=id,
         format_=format_,
         password=password,
+        x_export_password=x_export_password,
     )
 
     response = client.get_httpx_client().request(
@@ -156,9 +175,11 @@ def sync(
     client: AuthenticatedClient | Client,
     format_: GetCasIdDownloadFormat,
     password: str | Unset = UNSET,
+    x_export_password: str | Unset = UNSET,
 ) -> (
     GetCasIdDownloadResponse200
     | GetCasIdDownloadResponse400
+    | GetCasIdDownloadResponse403
     | GetCasIdDownloadResponse404
     | GetCasIdDownloadResponse500
     | None
@@ -179,20 +200,23 @@ def sync(
     - `p12-keystore` - PKCS#12 keystore with CA certificate and private key
     - `jks-keystore` - Java KeyStore with CA certificate and private key
 
-    **Security Note:** Keystore formats expose the CA's private key. Only use these for CA operations
-    that require signing capability (e.g., offline CA scenarios).
+    **Security Note:** Keystore formats expose the CA's private key. They are refused with `403
+    CA_KEY_EXPORT_DISABLED` unless the server runs with `ALLOW_CA_KEY_EXPORT=true`. When enabled, only
+    the `admin` role may use them (`403 CA_KEY_EXPORT_ADMIN_REQUIRED` otherwise) and every attempt is
+    written to the audit log as `ca.export_private_key`.
 
     Args:
         id (UUID):
         format_ (GetCasIdDownloadFormat):
         password (str | Unset):
+        x_export_password (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        GetCasIdDownloadResponse200 | GetCasIdDownloadResponse400 | GetCasIdDownloadResponse404 | GetCasIdDownloadResponse500
+        GetCasIdDownloadResponse200 | GetCasIdDownloadResponse400 | GetCasIdDownloadResponse403 | GetCasIdDownloadResponse404 | GetCasIdDownloadResponse500
     """
 
     return sync_detailed(
@@ -200,6 +224,7 @@ def sync(
         client=client,
         format_=format_,
         password=password,
+        x_export_password=x_export_password,
     ).parsed
 
 
@@ -209,9 +234,11 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     format_: GetCasIdDownloadFormat,
     password: str | Unset = UNSET,
+    x_export_password: str | Unset = UNSET,
 ) -> Response[
     GetCasIdDownloadResponse200
     | GetCasIdDownloadResponse400
+    | GetCasIdDownloadResponse403
     | GetCasIdDownloadResponse404
     | GetCasIdDownloadResponse500
 ]:
@@ -231,26 +258,30 @@ async def asyncio_detailed(
     - `p12-keystore` - PKCS#12 keystore with CA certificate and private key
     - `jks-keystore` - Java KeyStore with CA certificate and private key
 
-    **Security Note:** Keystore formats expose the CA's private key. Only use these for CA operations
-    that require signing capability (e.g., offline CA scenarios).
+    **Security Note:** Keystore formats expose the CA's private key. They are refused with `403
+    CA_KEY_EXPORT_DISABLED` unless the server runs with `ALLOW_CA_KEY_EXPORT=true`. When enabled, only
+    the `admin` role may use them (`403 CA_KEY_EXPORT_ADMIN_REQUIRED` otherwise) and every attempt is
+    written to the audit log as `ca.export_private_key`.
 
     Args:
         id (UUID):
         format_ (GetCasIdDownloadFormat):
         password (str | Unset):
+        x_export_password (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[GetCasIdDownloadResponse200 | GetCasIdDownloadResponse400 | GetCasIdDownloadResponse404 | GetCasIdDownloadResponse500]
+        Response[GetCasIdDownloadResponse200 | GetCasIdDownloadResponse400 | GetCasIdDownloadResponse403 | GetCasIdDownloadResponse404 | GetCasIdDownloadResponse500]
     """
 
     kwargs = _get_kwargs(
         id=id,
         format_=format_,
         password=password,
+        x_export_password=x_export_password,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -264,9 +295,11 @@ async def asyncio(
     client: AuthenticatedClient | Client,
     format_: GetCasIdDownloadFormat,
     password: str | Unset = UNSET,
+    x_export_password: str | Unset = UNSET,
 ) -> (
     GetCasIdDownloadResponse200
     | GetCasIdDownloadResponse400
+    | GetCasIdDownloadResponse403
     | GetCasIdDownloadResponse404
     | GetCasIdDownloadResponse500
     | None
@@ -287,20 +320,23 @@ async def asyncio(
     - `p12-keystore` - PKCS#12 keystore with CA certificate and private key
     - `jks-keystore` - Java KeyStore with CA certificate and private key
 
-    **Security Note:** Keystore formats expose the CA's private key. Only use these for CA operations
-    that require signing capability (e.g., offline CA scenarios).
+    **Security Note:** Keystore formats expose the CA's private key. They are refused with `403
+    CA_KEY_EXPORT_DISABLED` unless the server runs with `ALLOW_CA_KEY_EXPORT=true`. When enabled, only
+    the `admin` role may use them (`403 CA_KEY_EXPORT_ADMIN_REQUIRED` otherwise) and every attempt is
+    written to the audit log as `ca.export_private_key`.
 
     Args:
         id (UUID):
         format_ (GetCasIdDownloadFormat):
         password (str | Unset):
+        x_export_password (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        GetCasIdDownloadResponse200 | GetCasIdDownloadResponse400 | GetCasIdDownloadResponse404 | GetCasIdDownloadResponse500
+        GetCasIdDownloadResponse200 | GetCasIdDownloadResponse400 | GetCasIdDownloadResponse403 | GetCasIdDownloadResponse404 | GetCasIdDownloadResponse500
     """
 
     return (
@@ -309,5 +345,6 @@ async def asyncio(
             client=client,
             format_=format_,
             password=password,
+            x_export_password=x_export_password,
         )
     ).parsed
