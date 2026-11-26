@@ -177,6 +177,10 @@ pub enum RaCmd {
         /// Ciphertext to decrypt, base64 (or @file)
         #[arg(long)]
         data: String,
+        /// Expected CMS content-encryption key length in bytes: 16, 24 or 32
+        /// (AES-128/192/256). Omit it to send the legacy request.
+        #[arg(long, value_name = "BYTES", value_parser = parse_session_key_length)]
+        session_key_length: Option<u8>,
         #[command(flatten)]
         token: ClusterToken,
         #[command(flatten)]
@@ -452,8 +456,13 @@ fn run_ra(api: &Api, cmd: RaCmd) -> Result<()> {
                 None,
             );
         }
-        RaCmd::Decrypt { data, token, out } => {
-            let req = json!({ "data": stripped(data)? });
+        RaCmd::Decrypt {
+            data,
+            session_key_length,
+            token,
+            out,
+        } => {
+            let req = decrypt_body(stripped(data)?, session_key_length);
             render(
                 &api.post("/external/ra/decrypt")
                     .bearer(token.require()?)
@@ -465,6 +474,26 @@ fn run_ra(api: &Api, cmd: RaCmd) -> Result<()> {
         }
     }
     Ok(())
+}
+
+/// Session-key lengths (bytes) the RA decrypt endpoint accepts: AES-128/192/256.
+const SESSION_KEY_LENGTHS: [u8; 3] = [16, 24, 32];
+
+fn parse_session_key_length(s: &str) -> std::result::Result<u8, String> {
+    s.parse::<u8>()
+        .ok()
+        .filter(|n| SESSION_KEY_LENGTHS.contains(n))
+        .ok_or_else(|| format!("must be 16, 24 or 32 (got `{s}`)"))
+}
+
+/// Body of `POST /external/ra/decrypt`. Without a session-key length it is the
+/// legacy `{"data": ...}` request; with one it adds a numeric `sessionKeyLength`.
+fn decrypt_body(data: String, session_key_length: Option<u8>) -> Value {
+    let mut req = json!({ "data": data });
+    if let Some(n) = session_key_length {
+        req["sessionKeyLength"] = json!(n);
+    }
+    req
 }
 
 fn run_ssh(api: &Api, cmd: SshExtCmd) -> Result<()> {
@@ -642,5 +671,48 @@ mod tests {
             require(Some("t".into()), "X").unwrap().as_deref(),
             Some("t")
         );
+    }
+
+    fn decrypt(args: &[&str]) -> std::result::Result<Value, clap::Error> {
+        let mut argv = vec![
+            "t", "ra", "decrypt", "--data", " QUJD\n", "--token", "pkimg_x",
+        ];
+        argv.extend_from_slice(args);
+        match T::try_parse_from(argv)?.c {
+            ExternalCmd::Ra(RaCmd::Decrypt {
+                data,
+                session_key_length,
+                ..
+            }) => Ok(decrypt_body(stripped(data).unwrap(), session_key_length)),
+            _ => unreachable!(),
+        }
+    }
+
+    #[test]
+    fn decrypt_without_flag_is_the_legacy_request() {
+        let body = decrypt(&[]).unwrap();
+        assert_eq!(body, json!({ "data": "QUJD" }));
+        assert_eq!(serde_json::to_string(&body).unwrap(), r#"{"data":"QUJD"}"#);
+    }
+
+    #[test]
+    fn decrypt_sends_numeric_session_key_length() {
+        for n in ["16", "24", "32"] {
+            let body = decrypt(&["--session-key-length", n]).unwrap();
+            assert_eq!(
+                serde_json::to_string(&body).unwrap(),
+                format!(r#"{{"data":"QUJD","sessionKeyLength":{n}}}"#)
+            );
+            assert!(body["sessionKeyLength"].is_u64());
+        }
+    }
+
+    #[test]
+    fn decrypt_rejects_other_session_key_lengths() {
+        for bad in ["0", "8", "15", "17", "64", "256", "-16", "aes256", ""] {
+            let arg = format!("--session-key-length={bad}");
+            let err = decrypt(&[&arg]).unwrap_err();
+            assert_eq!(err.kind(), clap::error::ErrorKind::ValueValidation, "{bad}");
+        }
     }
 }

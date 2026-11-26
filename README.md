@@ -397,6 +397,7 @@ pki external ra provision --token pkimg_xxx
 pki external ra renew --token pkimg_xxx
 pki external ra sign --token pkimg_xxx --digest <BASE64>
 pki external ra decrypt --token pkimg_xxx --data <BASE64>
+pki external ra decrypt --token pkimg_xxx --data <BASE64> --session-key-length 32   # Expected AES key size: 16, 24 or 32 bytes
 
 # SSH automation API (fleet token)
 pki external ssh sign-host --fqdn web1.acme.internal --pubkey @/etc/ssh/ssh_host_ecdsa_key.pub
