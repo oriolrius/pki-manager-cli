@@ -30,7 +30,8 @@ mkdir -p dist "$staging/$name"
 cp README.md LICENSE "$exe" "$staging/$name/"
 rm -f "dist/${name}.zip"
 (cd "$staging" && zip -qr "$OLDPWD/dist/${name}.zip" "$name")
-echo "dist/${name}.zip"
+cp "$exe" dist/pki.exe
+echo "dist/${name}.zip dist/pki.exe"
 
 # On WSL, run the .exe on Windows as a check.
 if grep -qi microsoft /proc/version 2>/dev/null; then

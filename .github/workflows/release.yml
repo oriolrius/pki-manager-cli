@@ -9,7 +9,7 @@
 # | Linux x86 (32-bit)    | i686-unknown-linux-musl          | .tar.gz, .deb, .rpm      |
 # | Linux ARM 64-bit      | aarch64-unknown-linux-musl       | .tar.gz, .deb, .rpm      |
 # | Linux ARM 32-bit (v7) | armv7-unknown-linux-musleabihf   | .tar.gz, .deb, .rpm      |
-# | Windows x86-64        | x86_64-pc-windows-msvc           | .zip                     |
+# | Windows x86-64        | x86_64-pc-windows-msvc           | .zip, pki.exe            |
 # | macOS Apple silicon   | aarch64-apple-darwin             | .tar.gz                  |
 #
 # Linux binaries are static (musl), so one file runs on every distribution.
@@ -120,6 +120,8 @@ jobs:
           if [[ "$TARGET" == *windows* ]]; then
             cp "target/${TARGET}/release/pki.exe" "staging/${name}/"
             (cd staging && 7z a -tzip "../dist/${name}.zip" "${name}" > /dev/null)
+            # Also the bare .exe, for a download that needs no unzip.
+            cp "target/${TARGET}/release/pki.exe" dist/pki.exe
           else
             cp "target/${TARGET}/release/pki" "staging/${name}/"
             tar -C staging -czf "dist/${name}.tar.gz" "${name}"

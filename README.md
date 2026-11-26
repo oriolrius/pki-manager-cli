@@ -13,7 +13,7 @@ OpenSSL, no CA certificates package.
 
 | pki-cli | PKI Manager | REST API | Language |
 |---------|-------------|----------|----------|
-| 1.0.0   | 3.19.0      | v1       | Rust     |
+| 1.0.1   | 3.19.0      | v1       | Rust     |
 | 0.5.0   | 3.11.0      | v1       | Python (last Python release, tag `v0.5.0`) |
 
 > Against an older server, commands for endpoints it does not have return 404;
@@ -33,7 +33,7 @@ files. The Linux binaries are static (musl), so they run on every distribution.
 | Linux x86 (32-bit) | `pki-cli-<version>-i686-unknown-linux-musl.tar.gz`, `pki-cli_<version>_i386.deb`, `pki-cli-<version>-1.i686.rpm` |
 | Linux ARM 64-bit | `pki-cli-<version>-aarch64-unknown-linux-musl.tar.gz`, `pki-cli_<version>_arm64.deb`, `pki-cli-<version>-1.aarch64.rpm` |
 | Linux ARM 32-bit (ARMv7, for example Raspberry Pi OS 32-bit) | `pki-cli-<version>-armv7-unknown-linux-musleabihf.tar.gz`, `pki-cli_<version>_armhf.deb`, `pki-cli-<version>-1.armv7hl.rpm` |
-| Windows x86-64 | `pki-cli-<version>-x86_64-pc-windows-msvc.zip` |
+| Windows x86-64 | `pki-cli-<version>-x86_64-pc-windows-msvc.zip`, `pki.exe` |
 | macOS Apple silicon | `pki-cli-<version>-aarch64-apple-darwin.tar.gz` |
 
 `SHA256SUMS` has the checksum of every file, and each file has a GitHub build
@@ -41,22 +41,22 @@ provenance attestation.
 
 ```bash
 # Debian / Ubuntu
-sudo apt install ./pki-cli_1.0.0_amd64.deb
+sudo apt install ./pki-cli_1.0.1_amd64.deb
 
 # Fedora / RHEL / openSUSE
-sudo rpm -i pki-cli-1.0.0-1.x86_64.rpm
+sudo rpm -i pki-cli-1.0.1-1.x86_64.rpm
 
 # Any Linux or macOS: the archive has the `pki` binary
-tar -xzf pki-cli-1.0.0-x86_64-unknown-linux-musl.tar.gz
-sudo install pki-cli-1.0.0-x86_64-unknown-linux-musl/pki /usr/local/bin/
+tar -xzf pki-cli-1.0.1-x86_64-unknown-linux-musl.tar.gz
+sudo install pki-cli-1.0.1-x86_64-unknown-linux-musl/pki /usr/local/bin/
 
 # Check a download
 sha256sum --check --ignore-missing SHA256SUMS
-gh attestation verify pki-cli_1.0.0_amd64.deb --repo oriolrius/pki-manager-cli
+gh attestation verify pki-cli_1.0.1_amd64.deb --repo oriolrius/pki-manager-cli
 ```
 
 On macOS, a binary from a browser download is in quarantine; remove the flag with
-`xattr -d com.apple.quarantine pki`. On Windows, unzip the archive and put `pki.exe`
+`xattr -d com.apple.quarantine pki`. On Windows, download `pki.exe` (or unzip the archive) and put it
 in a folder on your `PATH`. The `.exe` has a static C runtime, so it needs no Visual C++
 redistributable.
 
