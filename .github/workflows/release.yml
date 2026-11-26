@@ -10,6 +10,7 @@
 # | Linux ARM 64-bit      | aarch64-unknown-linux-musl       | .tar.gz, .deb, .rpm      |
 # | Linux ARM 32-bit (v7) | armv7-unknown-linux-musleabihf   | .tar.gz, .deb, .rpm      |
 # | Windows x86-64        | x86_64-pc-windows-msvc           | .zip                     |
+# | macOS Apple silicon   | aarch64-apple-darwin             | .tar.gz                  |
 #
 # Linux binaries are static (musl), so one file runs on every distribution.
 name: Release
@@ -45,6 +46,7 @@ jobs:
           - { target: aarch64-unknown-linux-musl,     os: ubuntu-latest,  deb: arm64, rpm: aarch64 }
           - { target: armv7-unknown-linux-musleabihf, os: ubuntu-latest,  deb: armhf, rpm: armv7hl }
           - { target: x86_64-pc-windows-msvc,         os: windows-latest }
+          - { target: aarch64-apple-darwin,           os: macos-latest }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -77,6 +79,10 @@ jobs:
         if: runner.os == 'Windows'
         env:
           RUSTFLAGS: -C target-feature=+crt-static
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
         run: cargo build --release --locked --target ${{ matrix.target }}
 
       - name: Smoke test
