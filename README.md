@@ -34,7 +34,6 @@ files. The Linux binaries are static (musl), so they run on every distribution.
 | Linux ARM 64-bit | `pki-cli-<version>-aarch64-unknown-linux-musl.tar.gz`, `pki-cli_<version>_arm64.deb`, `pki-cli-<version>-1.aarch64.rpm` |
 | Linux ARM 32-bit (ARMv7, for example Raspberry Pi OS 32-bit) | `pki-cli-<version>-armv7-unknown-linux-musleabihf.tar.gz`, `pki-cli_<version>_armhf.deb`, `pki-cli-<version>-1.armv7hl.rpm` |
 | Windows x86-64 | `pki-cli-<version>-x86_64-pc-windows-msvc.zip` |
-| macOS Apple silicon | `pki-cli-<version>-aarch64-apple-darwin.tar.gz` |
 
 `SHA256SUMS` has the checksum of every file, and each file has a GitHub build
 provenance attestation.
@@ -46,7 +45,7 @@ sudo apt install ./pki-cli_1.0.0_amd64.deb
 # Fedora / RHEL / openSUSE
 sudo rpm -i pki-cli-1.0.0-1.x86_64.rpm
 
-# Any Linux or macOS: the archive has the `pki` binary
+# Any Linux: the archive has the `pki` binary
 tar -xzf pki-cli-1.0.0-x86_64-unknown-linux-musl.tar.gz
 sudo install pki-cli-1.0.0-x86_64-unknown-linux-musl/pki /usr/local/bin/
 
@@ -55,9 +54,10 @@ sha256sum --check --ignore-missing SHA256SUMS
 gh attestation verify pki-cli_1.0.0_amd64.deb --repo oriolrius/pki-manager-cli
 ```
 
-On macOS, a binary from a browser download is in quarantine; remove the flag with
-`xattr -d com.apple.quarantine pki`. On Windows, unzip the archive and put `pki.exe`
-in a folder on your `PATH`.
+On Windows, unzip the archive and put `pki.exe` in a folder on your `PATH`. The `.exe`
+has a static C runtime, so it needs no Visual C++ redistributable.
+
+There is no macOS package. On macOS, build from source (below); this is not tested.
 
 ### From source
 
@@ -680,12 +680,17 @@ cargo test
 cargo run -- --help
 ```
 
-`.github/workflows/ci.yml` runs these on Linux, Windows and macOS.
-`.github/workflows/release.yml` builds the six targets on every pull request that
+`.github/workflows/ci.yml` runs these on Linux and Windows.
+`.github/workflows/release.yml` builds the five targets on every pull request that
 changes the code, and publishes a release for a `v*` tag (the tag must match the
 version in `Cargo.toml`). The Linux targets are cross-compiled with
 [cargo-zigbuild](https://github.com/rust-cross/cargo-zigbuild); the packages come from
 `cargo-deb` and `cargo-generate-rpm` (configured in `Cargo.toml`).
+
+To make the Windows package on Linux or WSL, run `scripts/package-windows.sh`. It uses
+[cargo-xwin](https://github.com/rust-cross/cargo-xwin) (it downloads the MSVC CRT and the
+Windows SDK, under the Microsoft license) and needs `clang`, `lld` and `zip`. It writes
+`dist/pki-cli-<version>-x86_64-pc-windows-msvc.zip`, with the same layout as the release.
 
 ## Changes from 0.x (Python)
 
