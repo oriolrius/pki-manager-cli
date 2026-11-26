@@ -11,7 +11,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import click
 import pytest
 import typer
 
@@ -169,9 +168,12 @@ def _spec_operations() -> set[tuple[str, str]]:
 
 
 def _cli_commands() -> set[str]:
-    def walk(cmd: click.Command, prefix: str = "pki"):
-        if isinstance(cmd, click.Group):
-            for name, sub in cmd.commands.items():
+    # A group is a command that has sub-commands. No `click` import: Typer 0.27+
+    # has its own copy of Click and no longer installs the `click` package.
+    def walk(cmd, prefix: str = "pki"):
+        subcommands = getattr(cmd, "commands", None)
+        if subcommands is not None:
+            for name, sub in subcommands.items():
                 yield from walk(sub, f"{prefix} {name}")
         else:
             yield prefix

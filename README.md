@@ -623,7 +623,8 @@ operations, add commands for anything new, and bump `PKI_MANAGER_VERSION` in
 When no server runs the new release yet, start the backend of that release from the
 [pki-manager-web](https://github.com/oriolrius/pki-manager-web) source (OIDC off, an
 empty database) and get `/api/v1/openapi.json` from it; the 3.18.0 document was made
-this way from the tag `v3.18.0`. The generator version used is openapi-python-client 0.28.2.
+this way from the tag `v3.18.0`. `uv.lock` is in git and pins the generator
+(openapi-python-client 0.28.2), so `uv sync` gives the same tools on every checkout.
 
 The SSH, external and RA commands do not use the generated client: the document gives
 those routes loose schemas. Their request bodies come from the Zod schemas of the backend
