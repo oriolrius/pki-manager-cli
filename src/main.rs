@@ -19,7 +19,7 @@ use crate::config::Settings;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// The PKI Manager release this CLI was built and checked against.
-pub const PKI_MANAGER_VERSION: &str = "3.19.0";
+pub const PKI_MANAGER_VERSION: &str = "4.0.0";
 /// The REST API generation, as in the `/api/v1` URL prefix.
 pub const API_VERSION: &str = "1";
 

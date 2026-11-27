@@ -13,6 +13,7 @@ OpenSSL, no CA certificates package.
 
 | pki-cli | PKI Manager | REST API | Language |
 |---------|-------------|----------|----------|
+| 1.1.0   | 4.0.0       | v1       | Rust     |
 | 1.0.1   | 3.19.0      | v1       | Rust     |
 | 0.5.0   | 3.11.0      | v1       | Python (last Python release, tag `v0.5.0`) |
 
@@ -21,6 +22,9 @@ OpenSSL, no CA certificates package.
 > lifecycle commands need the SSH REST/tRPC parity work that followed 3.9.5.
 > A download with `--password` needs 3.17.0+: the CLI sends the password in the
 > `X-Export-Password` header, not in the URL, and an older server ignores that header.
+> `pki diagnostics key-store` needs 4.0.0+. From 4.0.0, `pki external ra decrypt`
+> needs `--session-key-length` (the server answers 400 to a request without it); without
+> the option the CLI sends the request of 3.19 and older.
 
 ## Installation
 
@@ -41,18 +45,18 @@ provenance attestation.
 
 ```bash
 # Debian / Ubuntu
-sudo apt install ./pki-cli_1.0.1_amd64.deb
+sudo apt install ./pki-cli_1.1.0_amd64.deb
 
 # Fedora / RHEL / openSUSE
-sudo rpm -i pki-cli-1.0.1-1.x86_64.rpm
+sudo rpm -i pki-cli-1.1.0-1.x86_64.rpm
 
 # Any Linux or macOS: the archive has the `pki` binary
-tar -xzf pki-cli-1.0.1-x86_64-unknown-linux-musl.tar.gz
-sudo install pki-cli-1.0.1-x86_64-unknown-linux-musl/pki /usr/local/bin/
+tar -xzf pki-cli-1.1.0-x86_64-unknown-linux-musl.tar.gz
+sudo install pki-cli-1.1.0-x86_64-unknown-linux-musl/pki /usr/local/bin/
 
 # Check a download
 sha256sum --check --ignore-missing SHA256SUMS
-gh attestation verify pki-cli_1.0.1_amd64.deb --repo oriolrius/pki-manager-cli
+gh attestation verify pki-cli_1.1.0_amd64.deb --repo oriolrius/pki-manager-cli
 ```
 
 On macOS, a binary from a browser download is in quarantine; remove the flag with
