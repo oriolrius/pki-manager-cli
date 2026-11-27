@@ -80,6 +80,23 @@ pub fn extract_error(status: u16, body: &str) -> String {
     }
 }
 
+/// What a 503 adds to the error: the status, the server's `Retry-After`, and where an
+/// admin finds the cause of `KEY_STORE_UNAVAILABLE`. The CLI never resends the request:
+/// the server made nothing, so the user sends it again when the key store is back.
+fn unavailable_hint(body: &str, retry_after: Option<&str>) -> String {
+    let mut hint = " (HTTP 503).".to_string();
+    if let Some(delay) = ratelimit::parse_retry_after(retry_after) {
+        hint.push_str(&format!(" Retry after {}.", ratelimit::seconds(delay)));
+    }
+    let code = serde_json::from_str::<Value>(body)
+        .ok()
+        .and_then(|v| v.get("error")?.get("code")?.as_str().map(str::to_string));
+    if code.as_deref() == Some("KEY_STORE_UNAVAILABLE") {
+        hint.push_str(" An admin sees the cause with `pki diagnostics key-store`.");
+    }
+    hint
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum Base {
     Api,
@@ -349,11 +366,12 @@ impl Api {
                 .into());
             }
             if status >= 400 {
-                return Err(ApiError::new(
-                    status,
-                    extract_error(status, &String::from_utf8_lossy(&bytes)),
-                )
-                .into());
+                let text = String::from_utf8_lossy(&bytes);
+                let mut message = extract_error(status, &text);
+                if status == 503 {
+                    message.push_str(&unavailable_hint(&text, retry_after.as_deref()));
+                }
+                return Err(ApiError::new(status, message).into());
             }
             if req.base == Base::Root && content_type.contains("text/html") {
                 return Err(ApiError::new(
@@ -596,6 +614,53 @@ mod tests {
         assert_eq!(
             (e.status, e.message.as_str()),
             (404, "NOT_FOUND: no such CA")
+        );
+    }
+
+    #[test]
+    fn key_store_unavailable_is_not_retried() {
+        let body = r#"{"error":{"code":"KEY_STORE_UNAVAILABLE","message":"The key store is unavailable; retry later"}}"#;
+        let (url, rx) = serve(vec![reply(
+            "503 Service Unavailable",
+            "application/json",
+            "Retry-After: 30\r\n",
+            body,
+        )]);
+        // Rate-limit retries on: a 503 still fails at once, and the create is sent once.
+        let err = api(&url, None, 3)
+            .post("/cas/")
+            .json(serde_json::json!({"a": 1}))
+            .value()
+            .unwrap_err();
+        let e = err.downcast_ref::<ApiError>().unwrap();
+        assert_eq!(e.status, 503);
+        assert_eq!(
+            e.message,
+            "KEY_STORE_UNAVAILABLE: The key store is unavailable; retry later (HTTP 503). \
+             Retry after 30 s. An admin sees the cause with `pki diagnostics key-store`."
+        );
+        assert!(rx.recv().unwrap().starts_with("POST /api/v1/cas/ "));
+        assert!(rx.try_recv().is_err(), "the request was sent once");
+    }
+
+    #[test]
+    fn other_errors_keep_their_message() {
+        assert_eq!(unavailable_hint("<html>", None), " (HTTP 503).");
+        let conflict = r#"{"error":{"code":"KEY_MIGRATION_REQUIRED","message":"m"}}"#;
+        let (url, _rx) = serve(vec![reply(
+            "409 Conflict",
+            "application/json",
+            "",
+            conflict,
+        )]);
+        let err = api(&url, None, 0)
+            .get("/cas/x/download")
+            .value()
+            .unwrap_err();
+        let e = err.downcast_ref::<ApiError>().unwrap();
+        assert_eq!(
+            (e.status, e.message.as_str()),
+            (409, "KEY_MIGRATION_REQUIRED: m")
         );
     }
 

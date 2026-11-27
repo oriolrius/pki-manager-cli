@@ -128,6 +128,29 @@ export PKI_RATE_LIMIT_MAX_WAIT=120     # do not wait for a Retry-After longer th
 The default is `0` retries. The CLI waits only when the server sends a `Retry-After`
 header (in 3.18.0 the SSH fleet routes send a 429 without it).
 
+### Key store errors (HTTP 503, 409, 403)
+
+From PKI Manager 4, the X.509 private keys are in OpenBao. When OpenBao cannot serve a
+request, the server answers `503 KEY_STORE_UNAVAILABLE` with a `Retry-After` time. The
+CLI prints that error, adds the `Retry-After` time, and exits 1. It never sends the
+request again: `PKI_RATE_LIMIT_RETRIES` applies to `429` only. A create that got `503`
+made nothing: send the same command again when the key store is back.
+
+The other key store codes come through unchanged and exit 1: `409 KEY_MIGRATION_REQUIRED`,
+`409 KEY_STATE_CONFLICT`, `403 KEY_NOT_EXPORTABLE` and `403 KEY_EXPORT_DENIED`. The
+section "Key store errors" of the server's API guide (`docs/api/index.md` in pki-manager-web)
+says what each one means.
+
+An admin sees the cause of a `503` with:
+
+```bash
+pki diagnostics key-store            # state: ready, sealed, uninitialized, unauthorized, unavailable
+pki diagnostics key-store -o json    # the server's JSON
+```
+
+It exits 0 only when the state is `ready`. `pki health` is a liveness check: it stays
+healthy while OpenBao is sealed.
+
 ### 3. CLI Options
 
 ```bash
@@ -412,6 +435,7 @@ pki external ssh krl --host-id web1.acme.internal -o krl.enc   # ECIES envelope,
 
 ```bash
 pki health                   # API health + version
+pki diagnostics key-store    # Key store (OpenBao) state, admin only
 pki stats                    # Show statistics
 pki expiring --limit 20      # Show expiring certificates
 pki search "example"         # Search CAs, certificates and domains
@@ -481,6 +505,7 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 |----------|---------|
 | `GET /dashboard/expiring` | `pki expiring` |
 | `GET /dashboard/stats` | `pki stats` |
+| `GET /diagnostics/key-store` | `pki diagnostics key-store` |
 | `GET /health` | `pki health` |
 
 **Search**

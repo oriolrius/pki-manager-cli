@@ -1,4 +1,4 @@
-//! Top-level commands: dashboard, search, health, config, login, logout.
+//! Top-level commands: dashboard, search, health, diagnostics, config, login, logout.
 
 use anyhow::{Result, bail};
 use clap::Subcommand;
@@ -49,6 +49,20 @@ pub enum GeneralCmd {
     Login,
     /// Clear cached authentication token.
     Logout,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum DiagnosticsCmd {
+    /// Show the state of the X.509 key store (OpenBao Transit).
+    ///
+    /// Tells why X.509 operations answer KEY_STORE_UNAVAILABLE: sealed, not initialised,
+    /// token refused, or no answer. Exits 1 when the state is not `ready`. Needs the
+    /// admin role when the server has OIDC on. `pki health` does not depend on it.
+    KeyStore {
+        /// Output format: table, json
+        #[arg(short, long, value_enum, default_value_t)]
+        output: Format,
+    },
 }
 
 /// The API returns `totalCAs`/`activeCAs`; other keys exist only on some deployments.
@@ -131,6 +145,37 @@ pub fn run(api: &Api, cmd: GeneralCmd) -> Result<()> {
         }
     }
     Ok(())
+}
+
+pub fn run_diagnostics(api: &Api, cmd: DiagnosticsCmd) -> Result<()> {
+    match cmd {
+        DiagnosticsCmd::KeyStore { output } => {
+            let data = api.get("/diagnostics/key-store").value()?;
+            render(&data, output, |d| output::kv(d, Some("Key Store")));
+            key_store_verdict(&data)?;
+            output::success("Key store is ready");
+        }
+    }
+    Ok(())
+}
+
+/// `Ok` when the key store is `ready`; otherwise the error says what an operator checks.
+fn key_store_verdict(data: &Value) -> Result<()> {
+    let state = data.get("state").and_then(Value::as_str).unwrap_or("None");
+    if data.get("configured").and_then(Value::as_bool) == Some(false) {
+        bail!(
+            "Key store is not configured (state '{state}'): the OpenBao settings of the server are missing or invalid"
+        );
+    }
+    let reason = match state {
+        "ready" => return Ok(()),
+        "sealed" => "OpenBao is sealed; an operator unseals it",
+        "uninitialized" => "OpenBao is not initialised",
+        "unauthorized" => "the backend token file is missing or OpenBao refuses the token",
+        "unavailable" => "OpenBao does not answer",
+        other => bail!("Key store reports state '{other}'"),
+    };
+    bail!("Key store is not ready (state '{state}'): {reason}")
 }
 
 fn mask(value: &Option<String>, keep: usize) -> String {
@@ -315,6 +360,42 @@ fn print_search_results(data: &Value) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn key_store_states() {
+        use serde_json::json;
+        let check = |state: &str, configured: bool| {
+            key_store_verdict(
+                &json!({"provider": "openbao", "configured": configured, "state": state}),
+            )
+            .map_err(|e| e.to_string())
+        };
+        assert!(check("ready", true).is_ok());
+        assert_eq!(
+            check("sealed", true).unwrap_err(),
+            "Key store is not ready (state 'sealed'): OpenBao is sealed; an operator unseals it"
+        );
+        for state in ["uninitialized", "unauthorized", "unavailable"] {
+            let e = check(state, true).unwrap_err();
+            assert!(
+                e.starts_with(&format!("Key store is not ready (state '{state}'): ")),
+                "{e}"
+            );
+        }
+        assert!(
+            check("unavailable", false)
+                .unwrap_err()
+                .starts_with("Key store is not configured (state 'unavailable')")
+        );
+        assert_eq!(
+            check("melted", true).unwrap_err(),
+            "Key store reports state 'melted'"
+        );
+        assert!(
+            key_store_verdict(&json!({})).is_err(),
+            "no state is not ready"
+        );
+    }
 
     #[test]
     fn masking() {
