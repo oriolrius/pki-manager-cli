@@ -19,7 +19,7 @@ use crate::config::Settings;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// The PKI Manager release this CLI was built and checked against.
-pub const PKI_MANAGER_VERSION: &str = "3.19.0";
+pub const PKI_MANAGER_VERSION: &str = "4.0.0";
 /// The REST API generation, as in the `/api/v1` URL prefix.
 pub const API_VERSION: &str = "1";
 
@@ -104,6 +104,9 @@ enum Command {
     /// Machine-facing issuer API (cluster-token X.509 + fleet-token SSH)
     #[command(subcommand, arg_required_else_help = true)]
     External(external::ExternalCmd),
+    /// Operator diagnostics (admin role)
+    #[command(subcommand, arg_required_else_help = true)]
+    Diagnostics(general::DiagnosticsCmd),
     #[command(flatten)]
     General(general::GeneralCmd),
 }
@@ -149,6 +152,7 @@ fn main() -> ExitCode {
         Command::Report(c) => audit::run_report(&api, c),
         Command::Ssh(c) => ssh::run(&api, c),
         Command::External(c) => external::run(&api, c),
+        Command::Diagnostics(c) => general::run_diagnostics(&api, c),
         Command::General(c) => general::run(&api, c),
     });
 

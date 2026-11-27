@@ -13,6 +13,7 @@ OpenSSL, no CA certificates package.
 
 | pki-cli | PKI Manager | REST API | Language |
 |---------|-------------|----------|----------|
+| 1.1.0   | 4.0.0       | v1       | Rust     |
 | 1.0.1   | 3.19.0      | v1       | Rust     |
 | 0.5.0   | 3.11.0      | v1       | Python (last Python release, tag `v0.5.0`) |
 
@@ -21,6 +22,9 @@ OpenSSL, no CA certificates package.
 > lifecycle commands need the SSH REST/tRPC parity work that followed 3.9.5.
 > A download with `--password` needs 3.17.0+: the CLI sends the password in the
 > `X-Export-Password` header, not in the URL, and an older server ignores that header.
+> `pki diagnostics key-store` needs 4.0.0+. From 4.0.0, `pki external ra decrypt`
+> needs `--session-key-length` (the server answers 400 to a request without it); without
+> the option the CLI sends the request of 3.19 and older.
 
 ## Installation
 
@@ -41,18 +45,18 @@ provenance attestation.
 
 ```bash
 # Debian / Ubuntu
-sudo apt install ./pki-cli_1.0.1_amd64.deb
+sudo apt install ./pki-cli_1.1.0_amd64.deb
 
 # Fedora / RHEL / openSUSE
-sudo rpm -i pki-cli-1.0.1-1.x86_64.rpm
+sudo rpm -i pki-cli-1.1.0-1.x86_64.rpm
 
 # Any Linux or macOS: the archive has the `pki` binary
-tar -xzf pki-cli-1.0.1-x86_64-unknown-linux-musl.tar.gz
-sudo install pki-cli-1.0.1-x86_64-unknown-linux-musl/pki /usr/local/bin/
+tar -xzf pki-cli-1.1.0-x86_64-unknown-linux-musl.tar.gz
+sudo install pki-cli-1.1.0-x86_64-unknown-linux-musl/pki /usr/local/bin/
 
 # Check a download
 sha256sum --check --ignore-missing SHA256SUMS
-gh attestation verify pki-cli_1.0.1_amd64.deb --repo oriolrius/pki-manager-cli
+gh attestation verify pki-cli_1.1.0_amd64.deb --repo oriolrius/pki-manager-cli
 ```
 
 On macOS, a binary from a browser download is in quarantine; remove the flag with
@@ -127,6 +131,29 @@ export PKI_RATE_LIMIT_MAX_WAIT=120     # do not wait for a Retry-After longer th
 
 The default is `0` retries. The CLI waits only when the server sends a `Retry-After`
 header (in 3.18.0 the SSH fleet routes send a 429 without it).
+
+### Key store errors (HTTP 503, 409, 403)
+
+From PKI Manager 4, the X.509 private keys are in OpenBao. When OpenBao cannot serve a
+request, the server answers `503 KEY_STORE_UNAVAILABLE` with a `Retry-After` time. The
+CLI prints that error, adds the `Retry-After` time, and exits 1. It never sends the
+request again: `PKI_RATE_LIMIT_RETRIES` applies to `429` only. A create that got `503`
+made nothing: send the same command again when the key store is back.
+
+The other key store codes come through unchanged and exit 1: `409 KEY_MIGRATION_REQUIRED`,
+`409 KEY_STATE_CONFLICT`, `403 KEY_NOT_EXPORTABLE` and `403 KEY_EXPORT_DENIED`. The
+section "Key store errors" of the server's API guide (`docs/api/index.md` in pki-manager-web)
+says what each one means.
+
+An admin sees the cause of a `503` with:
+
+```bash
+pki diagnostics key-store            # state: ready, sealed, uninitialized, unauthorized, unavailable
+pki diagnostics key-store -o json    # the server's JSON
+```
+
+It exits 0 only when the state is `ready`. `pki health` is a liveness check: it stays
+healthy while OpenBao is sealed.
 
 ### 3. CLI Options
 
@@ -397,6 +424,7 @@ pki external ra provision --token pkimg_xxx
 pki external ra renew --token pkimg_xxx
 pki external ra sign --token pkimg_xxx --digest <BASE64>
 pki external ra decrypt --token pkimg_xxx --data <BASE64>
+pki external ra decrypt --token pkimg_xxx --data <BASE64> --session-key-length 32   # CMS key size: 16 (AES-128), 24 (3DES) or 32 (AES-256)
 
 # SSH automation API (fleet token)
 pki external ssh sign-host --fqdn web1.acme.internal --pubkey @/etc/ssh/ssh_host_ecdsa_key.pub
@@ -411,6 +439,7 @@ pki external ssh krl --host-id web1.acme.internal -o krl.enc   # ECIES envelope,
 
 ```bash
 pki health                   # API health + version
+pki diagnostics key-store    # Key store (OpenBao) state, admin only
 pki stats                    # Show statistics
 pki expiring --limit 20      # Show expiring certificates
 pki search "example"         # Search CAs, certificates and domains
@@ -480,6 +509,7 @@ Regenerate this table (and verify coverage) after a server upgrade — see
 |----------|---------|
 | `GET /dashboard/expiring` | `pki expiring` |
 | `GET /dashboard/stats` | `pki stats` |
+| `GET /diagnostics/key-store` | `pki diagnostics key-store` |
 | `GET /health` | `pki health` |
 
 **Search**

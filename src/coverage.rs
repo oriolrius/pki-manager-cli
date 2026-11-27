@@ -15,6 +15,7 @@ const OPERATION_COMMANDS: &[(&str, &str, &str)] = &[
     ("get", "/health", "pki health"),
     ("get", "/dashboard/stats", "pki stats"),
     ("get", "/dashboard/expiring", "pki expiring"),
+    ("get", "/diagnostics/key-store", "pki diagnostics key-store"),
     ("get", "/search", "pki search"),
     ("get", "/cas/", "pki ca list"),
     ("post", "/cas/", "pki ca create"),
